@@ -1,0 +1,88 @@
+/* ================================================================
+   Event card
+   ================================================================ */
+
+.event-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-16) var(--space-6) var(--space-5);
+  color: var(--color-text);
+  background:
+    radial-gradient(circle at 0 0, transparent 0.75rem, var(--color-surface) 0.8125rem) top left,
+    radial-gradient(circle at 100% 0, transparent 0.75rem, var(--color-surface) 0.8125rem) top right,
+    radial-gradient(circle at 0 100%, transparent 0.75rem, var(--color-surface) 0.8125rem) bottom left,
+    radial-gradient(circle at 100% 100%, transparent 0.75rem, var(--color-surface) 0.8125rem) bottom right;
+  background-repeat: no-repeat;
+  background-size: 51% 51%;
+  text-align: center;
+}
+
+.event-card__date {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  min-width: 8rem;
+  padding: var(--space-2) var(--space-5);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  color: var(--color-white);
+  background-color: var(--color-accent);
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  text-transform: uppercase;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.event-card__date-month {
+  margin-left: var(--space-1);
+  font-size: var(--font-size-sm);
+}
+
+.event-card__date sup {
+  font-size: 0.5em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.event-card__icon {
+  width: 5rem;
+  height: 5rem;
+  flex: 0 0 auto;
+  margin-bottom: var(--space-3);
+  object-fit: contain;
+}
+
+.event-card__title {
+  margin-bottom: var(--space-6);
+  font-size: var(--font-size-xl);
+}
+
+.event-card__meta {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: auto;
+  padding-bottom: var(--space-5);
+  border-bottom: var(--border-width) solid var(--color-highlight);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.event-card__link {
+  width: 100%;
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 38rem) {
+  .event-card {
+    width: 100%;
+    max-width: 25rem;
+  }
+}

@@ -1,0 +1,8 @@
+@import url("./reset.css");
+@import url("./global.css");
+@import url("./components/brand.css");
+@import url("./components/button.css");
+@import url("./components/event-card.css");
+@import url("./layouts/navbar.css");
+@import url("./layouts/footer.css");
+@import url("./pages/home.css");

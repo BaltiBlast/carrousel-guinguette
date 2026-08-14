@@ -1,0 +1,45 @@
+/* ================================================================
+   Shared components
+   ================================================================ */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 3rem;
+  padding: var(--space-3) var(--space-6);
+  border: var(--border-width) solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.button:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-0.125rem);
+}
+
+.button--outline {
+  color: var(--color-primary);
+  background-color: transparent;
+}
+
+.button--outline:hover {
+  color: var(--color-white);
+}
+
+.button__icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
