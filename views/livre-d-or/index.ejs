@@ -1,0 +1,52 @@
+<section class="guestbook-page section" aria-labelledby="guestbook-page-title">
+  <div class="container">
+    <div class="guestbook-page__heading">
+      <div>
+        <p class="guestbook-page__eyebrow">Vos plus beaux souvenirs</p>
+        <h1 class="guestbook-page__title" id="guestbook-page-title">Le livre d’or du Carrousel</h1>
+        <p class="guestbook-page__intro">
+          Découvrez les moments de danse, de musique et de convivialité partagés par nos visiteurs.
+        </p>
+      </div>
+      <a class="button" href="/livre-d-or/deposer">Déposer un avis</a>
+    </div>
+
+    <% if (reviews.length > 0) { %>
+      <aside class="guestbook-summary" aria-label="Résumé des avis">
+        <strong class="guestbook-summary__rating"><%= averageRating %></strong>
+        <div>
+          <p class="guestbook-summary__stars" aria-label="Note moyenne de <%= averageRating %> sur 5">
+            <span aria-hidden="true">★★★★★</span>
+          </p>
+          <p><%= reviews.length %> avis publiés</p>
+        </div>
+        <span class="guestbook-summary__demo">Données de démonstration</span>
+      </aside>
+
+      <div class="guestbook-list">
+        <% reviews.forEach((review) => { %>
+          <article class="guestbook-list-card">
+            <div class="guestbook-list-card__header">
+              <span class="guestbook-list-card__avatar" aria-hidden="true"><%= review.initials %></span>
+              <div>
+                <h2 class="guestbook-list-card__author"><%= review.author %></h2>
+                <time class="guestbook-list-card__date"><%= review.visitDate %></time>
+              </div>
+            </div>
+            <p class="guestbook-list-card__rating" aria-label="<%= review.rating %> étoiles sur 5">
+              <% for (let star = 1; star <= 5; star += 1) { %><span class="<%= star <= review.rating ? 'is-filled' : '' %>" aria-hidden="true">★</span><% } %>
+            </p>
+            <blockquote class="guestbook-list-card__comment">“<%= review.comment %>”</blockquote>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="guestbook-page__empty">
+        <span aria-hidden="true">❧</span>
+        <h2>Le livre d’or attend ses premiers mots</h2>
+        <p>Soyez parmi les premiers à raconter votre expérience au Carrousel.</p>
+        <a class="button" href="/livre-d-or/deposer">Déposer un avis</a>
+      </div>
+    <% } %>
+  </div>
+</section>

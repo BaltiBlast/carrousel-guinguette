@@ -1,0 +1,104 @@
+<section class="review-form-page section" aria-labelledby="review-form-title">
+  <div class="review-form-page__container container">
+    <a class="review-form-page__back" href="/livre-d-or">← Retour au livre d’or</a>
+
+    <div class="review-form-page__heading">
+      <p class="review-form-page__eyebrow">Le livre d’or du Carrousel</p>
+      <h1 class="review-form-page__title" id="review-form-title">Partagez votre expérience</h1>
+      <p class="review-form-page__intro">
+        Vous avez dansé, chanté ou partagé un bon moment au Carrousel&nbsp;? Racontez-nous ce qui a rendu votre visite
+        mémorable.
+      </p>
+    </div>
+
+    <form class="review-form" action="#" method="post">
+      <p class="review-form__required"><span aria-hidden="true">*</span> Champs obligatoires</p>
+
+      <div class="review-form__grid">
+        <div class="review-field">
+          <label for="review-author">Votre prénom ou pseudonyme <span aria-hidden="true">*</span></label>
+          <input
+            id="review-author"
+            name="author"
+            type="text"
+            autocomplete="nickname"
+            maxlength="60"
+            placeholder="Par exemple : Marie L."
+            required
+          />
+          <small>Ce nom sera affiché publiquement avec votre avis.</small>
+        </div>
+
+        <div class="review-field">
+          <label for="review-email">Votre adresse e-mail <span aria-hidden="true">*</span></label>
+          <input
+            id="review-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="vous@exemple.fr"
+            required
+          />
+          <small>Elle restera confidentielle et ne sera jamais publiée.</small>
+        </div>
+
+        <div class="review-field review-field--date">
+          <label for="review-visit-date">Date de votre visite <span>(facultatif)</span></label>
+          <input id="review-visit-date" name="visitDate" type="date" />
+        </div>
+      </div>
+
+      <fieldset class="review-rating">
+        <legend>Votre note <span aria-hidden="true">*</span></legend>
+        <div class="review-rating__options">
+          <% for (let rating = 5; rating >= 1; rating -= 1) { %>
+            <input id="rating-<%= rating %>" name="rating" type="radio" value="<%= rating %>" required />
+            <label for="rating-<%= rating %>">
+              <span aria-hidden="true">★</span>
+              <span class="visually-hidden"><%= rating %> étoile<%= rating > 1 ? "s" : "" %> sur 5</span>
+            </label>
+          <% } %>
+        </div>
+      </fieldset>
+
+      <div class="review-field">
+        <div class="review-field__label-row">
+          <label for="review-comment">Votre avis <span aria-hidden="true">*</span></label>
+          <small>800 caractères maximum</small>
+        </div>
+        <textarea
+          id="review-comment"
+          name="comment"
+          rows="7"
+          minlength="20"
+          maxlength="800"
+          placeholder="Racontez-nous votre moment au Carrousel…"
+          required
+        ></textarea>
+      </div>
+
+      <div class="review-form__agreements">
+        <label class="review-checkbox">
+          <input name="realExperience" type="checkbox" required />
+          <span>Je confirme que cet avis correspond à une expérience personnelle au Carrousel.</span>
+        </label>
+        <label class="review-checkbox">
+          <input name="publicationRules" type="checkbox" required />
+          <span>J’accepte que mon avis soit vérifié avant sa publication dans le livre d’or.</span>
+        </label>
+      </div>
+
+      <aside class="review-form__notice" aria-label="Informations sur la publication">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 6a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1Zm0-3a1.25 1.25 0 1 1 0 2.5A1.25 1.25 0 0 1 12 7Z" />
+        </svg>
+        <p>
+          Votre pseudonyme, votre note et votre témoignage pourront être affichés publiquement après modération. Votre
+          adresse e-mail sera uniquement utilisée pour vérifier votre contribution ou vous contacter à son sujet.
+        </p>
+      </aside>
+
+      <button class="button review-form__submit" type="submit">Envoyer mon avis</button>
+    </form>
+  </div>
+</section>

@@ -9,17 +9,39 @@
       </p>
     </div>
 
-    <div class="guestbook__empty">
-      <span class="guestbook__empty-icon" aria-hidden="true">❧</span>
-      <h3 class="guestbook__empty-title">Le livre d’or attend ses premiers mots</h3>
-      <p class="guestbook__empty-text">
-        Soyez parmi les premiers à partager ce que vous avez pensé du Carrousel et à faire vivre les souvenirs du lieu.
-      </p>
-    </div>
+    <% if (guestbookReviews.length > 0) { %>
+      <p class="guestbook__demo-note">Avis de démonstration</p>
+      <div class="guestbook__reviews">
+        <% guestbookReviews.forEach((review) => { %>
+          <article class="guestbook-card">
+            <div class="guestbook-card__header">
+              <span class="guestbook-card__avatar" aria-hidden="true"><%= review.initials %></span>
+              <div>
+                <h3 class="guestbook-card__author"><%= review.author %></h3>
+                <time class="guestbook-card__date"><%= review.visitDate %></time>
+              </div>
+            </div>
+            <p class="guestbook-card__rating" aria-label="<%= review.rating %> étoiles sur 5">
+              <% for (let star = 1; star <= 5; star += 1) { %><span class="<%= star <= review.rating ? 'is-filled' : '' %>" aria-hidden="true">★</span><% } %>
+            </p>
+            <blockquote class="guestbook-card__comment">“<%= review.comment %>”</blockquote>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="guestbook__empty">
+        <span class="guestbook__empty-icon" aria-hidden="true">❧</span>
+        <h3 class="guestbook__empty-title">Le livre d’or attend ses premiers mots</h3>
+        <p class="guestbook__empty-text">
+          Soyez parmi les premiers à partager ce que vous avez pensé du Carrousel et à faire vivre les souvenirs du
+          lieu.
+        </p>
+      </div>
+    <% } %>
 
     <div class="guestbook__actions">
       <a class="button button--outline" href="/livre-d-or">Découvrir le livre d’or</a>
-      <a class="button" href="/livre-d-or#deposer">Déposer un avis</a>
+      <a class="button" href="/livre-d-or/deposer">Déposer un avis</a>
     </div>
   </div>
 </section>
