@@ -11,9 +11,9 @@
 
     <% if (guestbookReviews.length > 0) { %>
       <p class="guestbook__demo-note">Avis de démonstration</p>
-      <div class="guestbook__reviews">
+      <div class="guestbook__reviews" data-guestbook-carousel>
         <% guestbookReviews.forEach((review) => { %>
-          <article class="guestbook-card">
+          <article class="guestbook-card" tabindex="0">
             <div class="guestbook-card__header">
               <span class="guestbook-card__avatar" aria-hidden="true"><%= review.initials %></span>
               <div>
@@ -28,6 +28,10 @@
           </article>
         <% }) %>
       </div>
+      <div class="guestbook__progress" aria-hidden="true">
+        <span class="guestbook__progress-bar" data-guestbook-progress></span>
+      </div>
+      <p class="visually-hidden" aria-live="polite" data-guestbook-status></p>
     <% } else { %>
       <div class="guestbook__empty">
         <span class="guestbook__empty-icon" aria-hidden="true">❧</span>
