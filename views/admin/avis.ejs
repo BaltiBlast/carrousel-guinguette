@@ -1,0 +1,114 @@
+<header class="admin-header">
+  <div class="admin-header__inner">
+    <a class="admin-brand admin-brand--header" href="/" aria-label="Le Carrousel — Retour au site">
+      <span aria-hidden="true">❧</span>
+      <span>Le Carrousel</span>
+    </a>
+    <div class="admin-header__account">
+      <span class="admin-header__avatar" aria-hidden="true">JF</span>
+      <span class="admin-header__identity"><strong>Jean Philippe</strong><small>Administrateur</small></span>
+      <a class="admin-header__logout" href="/admin/connexion">Se déconnecter</a>
+    </div>
+  </div>
+</header>
+
+<div class="admin-shell">
+  <aside class="admin-sidebar" aria-label="Navigation de l’administration">
+    <p class="admin-sidebar__label">Administration</p>
+    <nav>
+      <a class="admin-sidebar__link" href="/admin/tableau-de-bord" aria-current="page">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 3h6a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 2v5h6V5H4Zm10-2h6a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 2v3h6V5h-6ZM4 14h6a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2Zm0 2v3h6v-3H4Zm10-4h6a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Zm0 2v5h6v-5h-6Z" />
+        </svg>
+        Tableau de bord
+      </a>
+      <a class="admin-sidebar__link admin-sidebar__link--secondary" href="#avis-livre-d-or">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 3h14a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-7l-5.5 3.7A1 1 0 0 1 5 20.9V18a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Zm0 2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1a1 1 0 0 1 1 1v2l4.1-2.8a1 1 0 0 1 .6-.2H19a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H5Z" />
+        </svg>
+        Avis du livre d’or
+        <span class="admin-sidebar__count"><%= counts.pending %></span>
+      </a>
+      <span class="admin-sidebar__link admin-sidebar__link--planned" aria-disabled="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 3h14a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Zm0 2a1 1 0 0 0-1 1v8.6l3.3-3.3a1 1 0 0 1 1.4 0l2.3 2.3 3.3-4.3a1 1 0 0 1 1.5-.1L20 13V6a1 1 0 0 0-1-1H5Zm15 10.7-4.8-4.3-3.4 4.4a1 1 0 0 1-1.5.1L8 13.4l-4 4V18a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2.3ZM9 7a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z" />
+        </svg>
+        Photos et vidéos
+        <small>Bientôt</small>
+      </span>
+    </nav>
+    <a class="admin-sidebar__site-link" href="/" target="_blank" rel="noopener noreferrer">Voir le site ↗</a>
+  </aside>
+
+  <main class="admin-content">
+    <div class="admin-content__heading">
+      <div>
+        <p class="admin-content__eyebrow">Administration</p>
+        <h1>Tableau de bord</h1>
+        <p>Gérez les contenus et les contributions publiés sur le site du Carrousel.</p>
+      </div>
+    </div>
+
+    <aside class="admin-demo-notice" aria-label="Information sur les données affichées">
+      <strong>Données de démonstration</strong>
+      <span>Les avis affichés sur cette page sont temporaires et servent uniquement à présenter l’interface.</span>
+    </aside>
+
+    <section class="admin-stats" id="avis-livre-d-or" aria-label="Résumé des avis">
+      <article class="admin-stat admin-stat--pending">
+        <span>En attente</span>
+        <strong><%= counts.pending %></strong>
+      </article>
+      <article class="admin-stat admin-stat--published">
+        <span>Publiés</span>
+        <strong><%= counts.published %></strong>
+      </article>
+      <article class="admin-stat admin-stat--rejected">
+        <span>Refusés</span>
+        <strong><%= counts.rejected %></strong>
+      </article>
+    </section>
+
+    <section class="admin-reviews" aria-labelledby="reviews-title">
+      <div class="admin-reviews__heading">
+        <div>
+          <p class="admin-content__eyebrow">Livre d’or</p>
+          <h2 id="reviews-title">Gestion des avis</h2>
+        </div>
+        <div class="admin-filters" aria-label="Filtrer les avis">
+          <button type="button" aria-pressed="true">Tous</button>
+          <button type="button" aria-pressed="false">En attente</button>
+          <button type="button" aria-pressed="false">Publiés</button>
+          <button type="button" aria-pressed="false">Refusés</button>
+        </div>
+      </div>
+
+      <div class="admin-reviews__list">
+        <% reviews.forEach((review) => { %>
+          <article class="admin-review">
+            <div class="admin-review__avatar" aria-hidden="true"><%= review.initials %></div>
+            <div class="admin-review__body">
+              <div class="admin-review__header">
+                <div>
+                  <h3><%= review.author %></h3>
+                  <p class="admin-review__date">Visite du <%= review.visitDate %> · Reçu <%= review.submittedAt.toLowerCase() %></p>
+                </div>
+                <span class="admin-status admin-status--<%= review.status %>"><%= review.statusLabel %></span>
+              </div>
+              <p class="admin-review__rating" aria-label="<%= review.rating %> étoiles sur 5">
+                <% for (let star = 1; star <= 5; star += 1) { %><span class="<%= star <= review.rating ? 'is-filled' : '' %>" aria-hidden="true">★</span><% } %>
+              </p>
+              <blockquote class="admin-review__comment"><%= review.comment %></blockquote>
+              <% if (review.status === "pending") { %>
+                <div class="admin-review__actions">
+                  <button class="button" type="button">Publier l’avis</button>
+                  <button class="button button--outline admin-review__reject" type="button">Refuser</button>
+                </div>
+              <% } %>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    </section>
+  </main>
+</div>
