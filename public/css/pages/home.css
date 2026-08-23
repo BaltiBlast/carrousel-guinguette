@@ -36,7 +36,7 @@
   max-width: 9ch;
   margin-bottom: var(--space-5);
   font-size: var(--font-size-display);
-  line-height: var(--line-height-tight);
+  line-height: var(--line-height-heading);
 }
 
 .hero__intro {

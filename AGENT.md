@@ -8,6 +8,83 @@
 - Ne modifier que les fichiers nécessaires à la tâche validée.
 - Conserver les éléments déjà présents dans le projet, notamment les photographies du dossier `assets/`.
 
+## Stack
+
+Le projet utilise :
+
+- Node.js
+- Express
+- EJS
+- CSS sur mesure
+
+Le projet utilise les ES Modules.
+
+Utiliser :
+
+- import
+- export
+- Les accents de la langue Française pour les textes en Front uniquement
+- Uniquement ce que Tailwind propose pour la mise en forme côté client
+- Le kebab-case pour la nomination des fichiers
+
+Ne pas utiliser CommonJS :
+
+- require
+- module.exports
+
+## Instructions spécifiques aux dossiers
+
+Avant de créer ou modifier un fichier, vérifier si le dossier concerné ou l’un de ses dossiers parents contient un fichier `AGENTS.md` spécifique.
+
+Lorsqu’un fichier `AGENTS.md` spécifique existe :
+
+- appliquer les règles globales du présent fichier
+- appliquer également les règles spécifiques du dossier
+- considérer les règles les plus proches du fichier modifié comme prioritaires en cas de contradiction
+
+Lorsqu’une tâche concerne plusieurs dossiers, consulter les instructions propres à chacun d’eux.
+
+## Routing
+
+Le fichier \*.routes.js de chaque module doit être importé dans le fichier router.js à la racine du projet.
+
+Le fichier router.js regroupe tous les routers de tous les modules.
+
+Les routes des modules ne doivent pas être déclarées directement dans app.js.
+
+Chaque fichier \*.routes.js doit :
+
+- créer un router Express
+- déclarer les routes du module
+- appeler les controllers du module
+- exporter le router du module
+
+## Dépendances
+
+Le projet utilise npm.
+
+Ne pas installer, supprimer ou remplacer de package sans demande explicite.
+
+Ne pas modifier package.json ou package-lock.json sans demande explicite.
+
+Avant de proposer une nouvelle dépendance :
+
+- vérifier si une dépendance existante peut déjà répondre au besoin
+- expliquer pourquoi la nouvelle dépendance serait utile
+- attendre validation avant modification
+
+## Conventions
+
+Garder les noms de fichiers cohérents avec le nom du module.
+
+Ne pas mélanger plusieurs features dans un même module.
+
+Ne pas déplacer l’architecture existante sans expliquer pourquoi.
+
+Respecter l’organisation existante du projet avant de proposer une refactorisation.
+
+Avant d’ajouter une nouvelle logique, toujours vérifier si une fonction générique existante peut être réutilisée afin d’éviter les duplications et d’optimiser le code.
+
 ## Organisation du CSS
 
 Le CSS doit être structuré et rester facile à maintenir.
