@@ -10,9 +10,12 @@
     "dev": "nodemon app.js"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
     "express": "^5.1.0",
-    "express-ejs-layouts": "^2.5.1"
+    "express-ejs-layouts": "^2.5.1",
+    "mongoose": "^9.9.3",
+    "resend": "^6.24.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

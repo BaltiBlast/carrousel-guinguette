@@ -5,9 +5,11 @@
       <span>Le Carrousel</span>
     </a>
     <div class="admin-header__account">
-      <span class="admin-header__avatar" aria-hidden="true">JF</span>
-      <span class="admin-header__identity"><strong>Jean Philippe</strong><small>Administrateur</small></span>
-      <a class="admin-header__logout" href="/admin/connexion">Se déconnecter</a>
+      <span class="admin-header__avatar" aria-hidden="true"><%= user.displayName.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() %></span>
+      <span class="admin-header__identity"><strong><%= user.displayName %></strong><small>Administrateur</small></span>
+      <form class="admin-header__logout" action="/admin/deconnexion" method="post">
+        <button type="submit">Se déconnecter</button>
+      </form>
     </div>
   </div>
 </header>

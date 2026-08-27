@@ -126,6 +126,32 @@
   font-size: var(--font-size-sm);
 }
 
+.admin-login__notice {
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-6);
+  border: var(--border-width) solid;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  text-align: left;
+}
+
+.admin-login__notice--success {
+  border-color: rgb(7 87 47 / 30%);
+  color: var(--color-primary-dark);
+  background-color: var(--color-primary-light);
+}
+
+.admin-login__notice--error {
+  border-color: rgb(158 32 39 / 30%);
+  color: var(--color-accent);
+  background-color: rgb(158 32 39 / 8%);
+}
+
+.admin-login__primary-action {
+  width: 100%;
+  margin-top: var(--space-6);
+}
+
 .admin-login__back {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
@@ -201,6 +227,19 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
+}
+
+.admin-header__logout button {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-header__logout button:hover {
+  color: var(--color-primary);
 }
 
 .admin-shell {
