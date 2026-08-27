@@ -9,6 +9,7 @@ export async function connectDatabase() {
   }
 
   await mongoose.connect(mongoUri);
+  await Promise.all(Object.values(mongoose.models).map((model) => model.init()));
 
   return mongoose.connection;
 }

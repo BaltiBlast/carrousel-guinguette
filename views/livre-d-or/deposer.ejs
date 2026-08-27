@@ -11,8 +11,23 @@
       </p>
     </div>
 
-    <form class="review-form" action="#" method="post">
+    <% if (success) { %>
+      <p class="review-form-page__message review-form-page__message--success" role="status">
+        Merci ! Votre avis a bien été reçu et sera publié après modération.
+      </p>
+    <% } %>
+
+    <% if (error) { %>
+      <p class="review-form-page__message review-form-page__message--error" role="alert"><%= error %></p>
+    <% } %>
+
+    <form class="review-form" action="/livre-d-or/deposer" method="post">
       <p class="review-form__required"><span aria-hidden="true">*</span> Champs obligatoires</p>
+
+      <div class="review-form__honeypot" aria-hidden="true">
+        <label for="review-website">Votre site internet</label>
+        <input id="review-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+      </div>
 
       <div class="review-form__grid">
         <div class="review-field">
@@ -24,6 +39,7 @@
             autocomplete="nickname"
             maxlength="60"
             placeholder="Par exemple : Marie L."
+            value="<%= formData.author || '' %>"
             required
           />
           <small>Ce nom sera affiché publiquement avec votre avis.</small>
@@ -36,7 +52,9 @@
             name="email"
             type="email"
             autocomplete="email"
+            maxlength="254"
             placeholder="vous@exemple.fr"
+            value="<%= formData.email || '' %>"
             required
           />
           <small>Elle restera confidentielle et ne sera jamais publiée.</small>
@@ -44,7 +62,7 @@
 
         <div class="review-field review-field--date">
           <label for="review-visit-date">Date de votre visite <span>(facultatif)</span></label>
-          <input id="review-visit-date" name="visitDate" type="date" />
+          <input id="review-visit-date" name="visitDate" type="date" value="<%= formData.visitDate || '' %>" />
         </div>
       </div>
 
@@ -52,7 +70,7 @@
         <legend>Votre note <span aria-hidden="true">*</span></legend>
         <div class="review-rating__options">
           <% for (let rating = 5; rating >= 1; rating -= 1) { %>
-            <input id="rating-<%= rating %>" name="rating" type="radio" value="<%= rating %>" required />
+            <input id="rating-<%= rating %>" name="rating" type="radio" value="<%= rating %>" <%= String(formData.rating) === String(rating) ? 'checked' : '' %> required />
             <label for="rating-<%= rating %>">
               <span aria-hidden="true">★</span>
               <span class="visually-hidden"><%= rating %> étoile<%= rating > 1 ? "s" : "" %> sur 5</span>
@@ -74,16 +92,16 @@
           maxlength="800"
           placeholder="Racontez-nous votre moment au Carrousel…"
           required
-        ></textarea>
+        ><%= formData.comment || '' %></textarea>
       </div>
 
       <div class="review-form__agreements">
         <label class="review-checkbox">
-          <input name="realExperience" type="checkbox" required />
+          <input name="realExperience" type="checkbox" <%= formData.realExperience ? 'checked' : '' %> required />
           <span>Je confirme que cet avis correspond à une expérience personnelle au Carrousel.</span>
         </label>
         <label class="review-checkbox">
-          <input name="publicationRules" type="checkbox" required />
+          <input name="publicationRules" type="checkbox" <%= formData.publicationRules ? 'checked' : '' %> required />
           <span>J’accepte que mon avis soit vérifié avant sa publication dans le livre d’or.</span>
         </label>
       </div>
@@ -97,6 +115,13 @@
           adresse e-mail sera uniquement utilisée pour vérifier votre contribution ou vous contacter à son sujet.
         </p>
       </aside>
+
+      <div
+        class="cf-turnstile"
+        data-sitekey="<%= turnstileSiteKey %>"
+        data-action="guestbook-review"
+        data-theme="light"
+      ></div>
 
       <button class="button review-form__submit" type="submit">Envoyer mon avis</button>
     </form>

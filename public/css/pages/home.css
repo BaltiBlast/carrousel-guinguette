@@ -554,15 +554,6 @@
   font-size: var(--font-size-md);
 }
 
-.guestbook__demo-note {
-  margin-top: var(--space-8);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .guestbook__reviews {
   display: grid;
   width: 100%;

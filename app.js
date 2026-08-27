@@ -2,6 +2,7 @@ import express from "express";
 import expressLayouts from "express-ejs-layouts";
 import { connectDatabase } from "./database.js";
 import { initializeAdministrator, validateConfiguration } from "./modules/admin/admin.services.js";
+import { validateGuestbookConfiguration } from "./modules/livre-d-or/livre-d-or.services.js";
 import router from "./router.js";
 
 const app = express();
@@ -23,6 +24,7 @@ app.use((request, response) => {
 const port = process.env.PORT || 3000;
 
 validateConfiguration();
+validateGuestbookConfiguration();
 await connectDatabase();
 await initializeAdministrator();
 

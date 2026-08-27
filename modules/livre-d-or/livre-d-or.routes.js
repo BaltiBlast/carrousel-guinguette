@@ -5,5 +5,6 @@ const router = Router();
 
 router.get("/", controller.showGuestbook);
 router.get("/deposer", controller.showReviewForm);
+router.post("/deposer", controller.submitReview);
 
 export { router };

@@ -1,7 +1,10 @@
 import * as service from "./home.services.js";
 
-export function showHome(req, res) {
-  const pageData = service.getHomePageData();
-
-  res.render("home/home", pageData);
+export async function showHome(req, res, next) {
+  try {
+    const pageData = await service.getHomePageData();
+    res.render("home/home", pageData);
+  } catch (error) {
+    next(error);
+  }
 }

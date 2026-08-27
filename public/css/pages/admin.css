@@ -354,23 +354,6 @@
   color: var(--color-text-muted);
 }
 
-.admin-demo-notice {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
-  margin-top: var(--space-8);
-  border: var(--border-width) solid rgb(199 147 50 / 35%);
-  border-radius: var(--radius-md);
-  color: #6d4b0d;
-  background-color: rgb(199 147 50 / 12%);
-  font-size: var(--font-size-sm);
-}
-
-.admin-demo-notice strong {
-  flex: 0 0 auto;
-}
-
 .admin-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -454,6 +437,24 @@
 .admin-reviews__list {
   display: grid;
   gap: var(--space-4);
+}
+
+.admin-action-message {
+  padding: var(--space-4) var(--space-5);
+  margin-top: var(--space-6);
+  border: var(--border-width) solid rgb(7 87 47 / 30%);
+  border-radius: var(--radius-md);
+  color: var(--color-primary-dark);
+  background-color: var(--color-primary-light);
+}
+
+.admin-reviews__empty {
+  padding: var(--space-8);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  background-color: var(--color-surface);
+  text-align: center;
 }
 
 .admin-review {
@@ -540,6 +541,15 @@
   font-size: var(--font-size-sm);
 }
 
+.admin-review[hidden],
+.admin-reviews__empty[hidden] {
+  display: none;
+}
+
+.admin-review__actions form {
+  display: inline-flex;
+}
+
 .admin-review__reject {
   border-color: var(--color-accent);
   color: var(--color-accent);
@@ -573,7 +583,6 @@
     display: none;
   }
 
-  .admin-demo-notice,
   .admin-reviews__heading {
     align-items: flex-start;
     flex-direction: column;
@@ -600,6 +609,10 @@
   }
 
   .admin-review__actions .button {
+    width: 100%;
+  }
+
+  .admin-review__actions form {
     width: 100%;
   }
 }

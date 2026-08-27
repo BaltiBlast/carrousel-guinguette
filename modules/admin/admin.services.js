@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { Resend } from "resend";
-import { MagicLinkTokenMapper, SessionMapper, UserMapper } from "../../model/index.mapper.js";
+import { MagicLinkTokenMapper, ReviewMapper, SessionMapper, UserMapper } from "../../model/index.mapper.js";
 
 const LOGIN_REQUEST_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_REQUEST_LIMIT = 5;
@@ -89,55 +89,6 @@ export function validateConfiguration() {
     throw new Error("La variable d'environnement SESSION_COOKIE_NAME contient des caractères invalides.");
   }
 }
-
-const temporaryReviews = [
-  {
-    id: 1,
-    author: "Marie L.",
-    initials: "ML",
-    rating: 5,
-    visitDate: "18 août 2026",
-    submittedAt: "Aujourd’hui à 09 h 42",
-    status: "pending",
-    statusLabel: "En attente",
-    comment:
-      "Une très belle soirée, une ambiance chaleureuse et un orchestre qui nous a fait danser jusqu’au bout. Nous reviendrons avec plaisir !",
-  },
-  {
-    id: 2,
-    author: "Jean-Pierre",
-    initials: "JP",
-    rating: 4,
-    visitDate: "11 août 2026",
-    submittedAt: "Hier à 18 h 16",
-    status: "pending",
-    statusLabel: "En attente",
-    comment:
-      "Le cadre au bord des étangs est vraiment agréable. Nous avons passé un excellent après-midi en famille.",
-  },
-  {
-    id: 3,
-    author: "Claudine et Michel",
-    initials: "CM",
-    rating: 5,
-    visitDate: "4 août 2026",
-    submittedAt: "20 août 2026 à 14 h 05",
-    status: "published",
-    statusLabel: "Publié",
-    comment: "Quel bonheur de retrouver l’esprit des bals d’autrefois ! Merci à toute l’équipe pour son accueil.",
-  },
-  {
-    id: 4,
-    author: "Visiteur anonyme",
-    initials: "VA",
-    rating: 2,
-    visitDate: "3 août 2026",
-    submittedAt: "19 août 2026 à 11 h 27",
-    status: "rejected",
-    statusLabel: "Refusé",
-    comment: "Message temporaire utilisé pour présenter l’état d’un avis refusé dans le dashboard.",
-  },
-];
 
 export async function initializeAdministrator() {
   const administrator = getAdministratorData();
@@ -313,8 +264,58 @@ export function getSessionCookieName() {
   return getRequiredEnvironmentVariable("SESSION_COOKIE_NAME");
 }
 
-export function getDashboardPageData(user) {
-  const counts = temporaryReviews.reduce(
+function getReviewInitials(author) {
+  return author
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+function formatReviewDate(date, fallback) {
+  if (!date) {
+    return fallback;
+  }
+
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Paris",
+  }).format(date).replace(",", " à");
+}
+
+export async function moderateReview(reviewId, status) {
+  if (!/^[a-f\d]{24}$/i.test(reviewId) || !["published", "rejected"].includes(status)) {
+    return null;
+  }
+
+  return ReviewMapper.updateReviewStatusById(reviewId, status, new Date());
+}
+
+export async function getDashboardPageData(user, actionMessage = null) {
+  const storedReviews = await ReviewMapper.findAllReviews();
+  const statusLabels = { pending: "En attente", published: "Publié", rejected: "Refusé" };
+  const reviews = storedReviews.map((review) => ({
+    id: review._id.toString(),
+    author: review.author,
+    initials: getReviewInitials(review.author),
+    rating: review.rating,
+    visitDate: review.visitDate
+      ? new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(
+          review.visitDate,
+        )
+      : "date non renseignée",
+    submittedAt: formatReviewDate(review.createdAt, "date inconnue"),
+    status: review.status,
+    statusLabel: statusLabels[review.status],
+    comment: review.comment,
+  }));
+  const counts = reviews.reduce(
     (totals, review) => ({ ...totals, [review.status]: totals[review.status] + 1 }),
     { pending: 0, published: 0, rejected: 0 },
   );
@@ -324,8 +325,9 @@ export function getDashboardPageData(user) {
     title: "Tableau de bord | Administration du Carrousel",
     description: "Tableau de bord de l’administration du Carrousel.",
     pageClass: "admin-page",
-    reviews: temporaryReviews,
+    reviews,
     counts,
     user,
+    actionMessage,
   };
 }

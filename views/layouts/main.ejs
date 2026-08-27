@@ -98,5 +98,8 @@
     </footer>
 
     <script type="module" src="/js/script.js"></script>
+    <% if (typeof turnstileSiteKey !== "undefined") { %>
+      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <% } %>
   </body>
 </html>

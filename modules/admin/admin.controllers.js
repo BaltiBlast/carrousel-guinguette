@@ -65,8 +65,39 @@ export async function confirmMagicLink(req, res, next) {
   }
 }
 
-export function showDashboard(req, res) {
-  res.render("admin/avis", service.getDashboardPageData(req.adminUser));
+export async function showDashboard(req, res, next) {
+  try {
+    const messages = {
+      published: "L’avis a été publié.",
+      rejected: "L’avis a été refusé.",
+      unchanged: "Cet avis a déjà été traité ou n’existe plus.",
+    };
+    const actionMessage = typeof req.query.action === "string" ? messages[req.query.action] : null;
+
+    res.render("admin/avis", await service.getDashboardPageData(req.adminUser, actionMessage));
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updateReviewStatus(req, res, next, status) {
+  try {
+    const review = await service.moderateReview(req.params.reviewId, status);
+    const action = review ? status : "unchanged";
+    const allowedFilters = ["all", "pending", "published", "rejected"];
+    const filter = allowedFilters.includes(req.body.filter) ? req.body.filter : "all";
+    res.redirect(303, `/admin/tableau-de-bord?action=${action}&filter=${filter}#avis-livre-d-or`);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export function publishReview(req, res, next) {
+  return updateReviewStatus(req, res, next, "published");
+}
+
+export function rejectReview(req, res, next) {
+  return updateReviewStatus(req, res, next, "rejected");
 }
 
 export async function logout(req, res, next) {

@@ -9,6 +9,8 @@ router.post("/connexion", controller.sendMagicLink);
 router.get("/connexion/lien", controller.showMagicLinkConfirmation);
 router.post("/connexion/lien", controller.confirmMagicLink);
 router.get("/tableau-de-bord", middleware.requireAuthentication, controller.showDashboard);
+router.post("/avis/:reviewId/publier", middleware.requireAuthentication, controller.publishReview);
+router.post("/avis/:reviewId/refuser", middleware.requireAuthentication, controller.rejectReview);
 router.post("/deconnexion", middleware.requireAuthentication, controller.logout);
 
 export { router };

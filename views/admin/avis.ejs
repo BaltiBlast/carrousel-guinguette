@@ -51,11 +51,6 @@
       </div>
     </div>
 
-    <aside class="admin-demo-notice" aria-label="Information sur les données affichées">
-      <strong>Données de démonstration</strong>
-      <span>Les avis affichés sur cette page sont temporaires et servent uniquement à présenter l’interface.</span>
-    </aside>
-
     <section class="admin-stats" id="avis-livre-d-or" aria-label="Résumé des avis">
       <article class="admin-stat admin-stat--pending">
         <span>En attente</span>
@@ -71,23 +66,30 @@
       </article>
     </section>
 
+    <% if (actionMessage) { %>
+      <p class="admin-action-message" role="status"><%= actionMessage %></p>
+    <% } %>
+
     <section class="admin-reviews" aria-labelledby="reviews-title">
       <div class="admin-reviews__heading">
         <div>
           <p class="admin-content__eyebrow">Livre d’or</p>
           <h2 id="reviews-title">Gestion des avis</h2>
         </div>
-        <div class="admin-filters" aria-label="Filtrer les avis">
-          <button type="button" aria-pressed="true">Tous</button>
-          <button type="button" aria-pressed="false">En attente</button>
-          <button type="button" aria-pressed="false">Publiés</button>
-          <button type="button" aria-pressed="false">Refusés</button>
+        <div class="admin-filters" aria-label="Filtrer les avis" data-review-filters>
+          <button type="button" data-review-filter="all" aria-pressed="true">Tous</button>
+          <button type="button" data-review-filter="pending" aria-pressed="false">En attente</button>
+          <button type="button" data-review-filter="published" aria-pressed="false">Publiés</button>
+          <button type="button" data-review-filter="rejected" aria-pressed="false">Refusés</button>
         </div>
       </div>
 
       <div class="admin-reviews__list">
+        <% if (reviews.length === 0) { %>
+          <p class="admin-reviews__empty">Aucun avis n’a encore été déposé.</p>
+        <% } %>
         <% reviews.forEach((review) => { %>
-          <article class="admin-review">
+          <article class="admin-review" data-review-status="<%= review.status %>">
             <div class="admin-review__avatar" aria-hidden="true"><%= review.initials %></div>
             <div class="admin-review__body">
               <div class="admin-review__header">
@@ -101,15 +103,32 @@
                 <% for (let star = 1; star <= 5; star += 1) { %><span class="<%= star <= review.rating ? 'is-filled' : '' %>" aria-hidden="true">★</span><% } %>
               </p>
               <blockquote class="admin-review__comment"><%= review.comment %></blockquote>
-              <% if (review.status === "pending") { %>
+              <% if (review.status !== "published") { %>
                 <div class="admin-review__actions">
-                  <button class="button" type="button">Publier l’avis</button>
-                  <button class="button button--outline admin-review__reject" type="button">Refuser</button>
+                  <form action="/admin/avis/<%= review.id %>/publier" method="post">
+                    <input name="filter" type="hidden" value="all" data-review-form-filter />
+                    <button class="button" type="submit">Publier l’avis</button>
+                  </form>
+                  <% if (review.status === "pending") { %>
+                    <form action="/admin/avis/<%= review.id %>/refuser" method="post">
+                      <input name="filter" type="hidden" value="all" data-review-form-filter />
+                      <button class="button button--outline admin-review__reject" type="submit">Refuser</button>
+                    </form>
+                  <% } %>
+                </div>
+              <% } else { %>
+                <div class="admin-review__actions">
+                  <form action="/admin/avis/<%= review.id %>/refuser" method="post">
+                    <input name="filter" type="hidden" value="all" data-review-form-filter />
+                    <button class="button button--outline admin-review__reject" type="submit">Retirer et refuser l’avis</button>
+                  </form>
                 </div>
               <% } %>
             </div>
           </article>
         <% }) %>
+        <p class="admin-reviews__empty" data-review-filter-empty hidden>Aucun avis ne correspond à ce filtre.</p>
+        <p class="visually-hidden" aria-live="polite" data-review-filter-status></p>
       </div>
     </section>
   </main>
