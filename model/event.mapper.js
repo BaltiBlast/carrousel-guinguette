@@ -20,6 +20,15 @@ class Event extends CoreMapper {
     return this.model.find().sort({ startsAt: 1 }).lean();
   }
 
+  findUpcomingEvents(fromDate = new Date(), limit = null) {
+    const query = this.model.find({ endsAt: { $gte: fromDate } }).sort({ startsAt: 1 });
+    return (limit ? query.limit(limit) : query).lean();
+  }
+
+  findNextEvent(fromDate = new Date()) {
+    return this.model.findOne({ startsAt: { $gte: fromDate } }).sort({ startsAt: 1 }).lean();
+  }
+
   updateEventById(eventId, eventData) {
     return this.model.findByIdAndUpdate(eventId, eventData, {
       returnDocument: "after",

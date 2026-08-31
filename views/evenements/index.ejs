@@ -1,0 +1,64 @@
+<section class="events-index section" aria-labelledby="events-index-title">
+  <div class="events-index__container container">
+    <header class="events-index__header">
+      <p class="events-index__eyebrow">Le programme</p>
+      <h1 class="events-index__title" id="events-index-title">Tous les événements à venir</h1>
+      <p class="events-index__intro">Retrouvez les prochaines dates du Carrousel, classées mois par mois.</p>
+    </header>
+
+    <% if (eventYears.length) { %>
+      <div class="events-index__timeline">
+        <% eventYears.forEach((yearGroup) => { %>
+          <section class="events-year" aria-labelledby="events-year-<%= yearGroup.year %>">
+            <h2 class="events-year__title" id="events-year-<%= yearGroup.year %>"><%= yearGroup.year %></h2>
+
+            <% yearGroup.months.forEach((monthGroup) => { %>
+              <section class="events-month" aria-labelledby="events-month-<%= yearGroup.year %>-<%= monthGroup.month %>">
+                <header class="events-month__header">
+                  <h3 class="events-month__title" id="events-month-<%= yearGroup.year %>-<%= monthGroup.month %>"><%= monthGroup.month %></h3>
+                  <% if (monthGroup.isCurrentMonth) { %>
+                    <span class="events-month__current">Ce mois-ci</span>
+                  <% } %>
+                </header>
+
+                <div class="events-month__list">
+                  <% monthGroup.events.forEach((event) => { %>
+                    <article class="event-list-item" aria-labelledby="event-list-<%= event.slug %>">
+                      <time class="event-list-item__date" datetime="<%= event.date %>">
+                        <span class="event-list-item__day"><%= event.day %></span>
+                        <span class="visually-hidden"><%= event.month %> <%= event.year %></span>
+                      </time>
+                      <div class="event-list-item__content">
+                        <h4 class="event-list-item__title" id="event-list-<%= event.slug %>"><%= event.title %></h4>
+                        <p class="event-list-item__meta">
+                          <span>
+                            <time datetime="<%= event.time %>"><%= event.formattedTime %></time>
+                            –
+                            <time datetime="<%= event.endTime %>"><%= event.formattedEndTime %></time>
+                          </span>
+                          <data value="<%= event.price %>"><%= event.priceLabel %></data>
+                        </p>
+                        <% if (event.priceDetails) { %>
+                          <p class="event-list-item__details"><%= event.priceDetails %></p>
+                        <% } %>
+                      </div>
+                      <a class="button button--outline event-list-item__link" href="/evenements/<%= event.slug %>">
+                        Voir le détail<span class="visually-hidden"> de <%= event.title %></span>
+                      </a>
+                    </article>
+                  <% }) %>
+                </div>
+              </section>
+            <% }) %>
+          </section>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="events-index__empty">
+        <h2>Aucun événement programmé</h2>
+        <p>De nouvelles dates seront bientôt annoncées. Revenez prochainement consulter le programme.</p>
+        <a class="button" href="/#contact">Nous contacter</a>
+      </div>
+    <% } %>
+  </div>
+</section>

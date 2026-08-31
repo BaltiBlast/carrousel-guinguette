@@ -8,7 +8,7 @@
 .event-detail__content { padding: clamp(var(--space-8), 6vw, var(--space-16)); }
 .event-detail__eyebrow { margin-bottom: var(--space-2); color: var(--color-accent); font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; }
 .event-detail__title { margin-bottom: var(--space-5); font-size: var(--font-size-display); }
-.event-detail__description { margin-bottom: var(--space-8); color: var(--color-text-muted); font-size: var(--font-size-md); }
+.event-detail__description { margin-bottom: var(--space-8); color: var(--color-text-muted); font-size: var(--font-size-md); white-space: pre-line; }
 .event-detail__information { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-block: var(--space-6) var(--space-8); }
 .event-detail__information > div { min-width: 0; padding: var(--space-5); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-md); background-color: var(--color-background); }
 .event-detail__information dt { color: var(--color-text-muted); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); text-transform: uppercase; }

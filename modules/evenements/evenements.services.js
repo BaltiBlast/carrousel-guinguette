@@ -1,62 +1,6 @@
-const events = [
-  {
-    slug: "apres-midi-musette",
-    title: "Après-midi musette",
-    date: "2026-08-25",
-    day: "25",
-    month: "août",
-    year: 2026,
-    formattedDate: "25 août 2026",
-    time: "14:30",
-    formattedTime: "14 h 30",
-    endTime: "18:30",
-    formattedEndTime: "18 h 30",
-    price: 12,
-    priceLabel: "12 € par personne",
-    priceDetails: "Goûter offert.",
-    description:
-      "Retrouvez l’ambiance chaleureuse des bals d’autrefois lors d’un après-midi consacré au musette. Accordéon, valses, tangos et grands classiques vous attendent sur la piste du Carrousel.",
-    icon: "/assets/img/icons/accordion-vintage.png",
-  },
-  {
-    slug: "annees-70-80",
-    title: "Les années 70–80",
-    date: "2026-09-01",
-    day: "1er",
-    month: "septembre",
-    year: 2026,
-    formattedDate: "1er septembre 2026",
-    time: "14:30",
-    formattedTime: "14 h 30",
-    endTime: "19:00",
-    formattedEndTime: "19 h",
-    price: 12,
-    priceLabel: "12 € par personne",
-    priceDetails: "Première boisson comprise dans le tarif.",
-    description:
-      "Remontez le temps au son des incontournables des années 70 et 80. Une sélection festive, des refrains que tout le monde connaît et une piste de danse prête à vibrer tout l’après-midi.",
-    icon: "/assets/img/icons/vinyle-vintage.png",
-  },
-  {
-    slug: "reprises-80-2000",
-    title: "Reprises 80–2000",
-    date: "2026-09-08",
-    day: "8",
-    month: "septembre",
-    year: 2026,
-    formattedDate: "8 septembre 2026",
-    time: "14:30",
-    formattedTime: "14 h 30",
-    endTime: "20:00",
-    formattedEndTime: "20 h",
-    price: 12,
-    priceLabel: "12 € par personne",
-    priceDetails: "Entrée, vestiaire et une boisson sans alcool compris. Une petite restauration sera proposée sur place en supplément.",
-    description:
-      "Chantez et dansez sur les titres marquants des années 80 aux années 2000. Cette rencontre réunit les tubes pop, rock et variété qui ont accompagné plusieurs générations.",
-    icon: "/assets/img/icons/microphone-vintage.png",
-  },
-];
+import { EventMapper } from "../../model/index.mapper.js";
+
+const EVENT_TIME_ZONE = "Europe/Paris";
 
 const venue = {
   name: "Le Carrousel",
@@ -65,20 +9,134 @@ const venue = {
   city: "Hannonville-sous-les-Côtes",
 };
 
-export function getEvents() {
-  return events;
+function getDateParts(date) {
+  return Object.fromEntries(
+    new Intl.DateTimeFormat("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: EVENT_TIME_ZONE,
+    })
+      .formatToParts(date)
+      .filter(({ type }) => type !== "literal")
+      .map(({ type, value }) => [type, value]),
+  );
 }
 
-export function getEventBySlug(slug) {
-  return events.find((event) => event.slug === slug) || null;
+function getTimeParts(date) {
+  return Object.fromEntries(
+    new Intl.DateTimeFormat("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: EVENT_TIME_ZONE,
+    })
+      .formatToParts(date)
+      .filter(({ type }) => type !== "literal")
+      .map(({ type, value }) => [type, value]),
+  );
 }
 
-export function getEventPageData(slug) {
-  const event = getEventBySlug(slug);
+function formatTime(date) {
+  const parts = getTimeParts(date);
+  return parts.minute === "00" ? `${Number(parts.hour)} h` : `${Number(parts.hour)} h ${parts.minute}`;
+}
 
-  if (!event) {
+function formatDateAttribute(date) {
+  return new Intl.DateTimeFormat("fr-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: EVENT_TIME_ZONE,
+  }).format(date);
+}
+
+function formatTimeAttribute(date) {
+  const parts = getTimeParts(date);
+  return `${parts.hour}:${parts.minute}`;
+}
+
+function presentEvent(event) {
+  const dateParts = getDateParts(event.startsAt);
+  const day = dateParts.day === "1" ? "1er" : dateParts.day;
+
+  return {
+    slug: event.slug,
+    title: event.title,
+    description: event.description,
+    date: formatDateAttribute(event.startsAt),
+    day,
+    month: dateParts.month,
+    year: dateParts.year,
+    formattedDate: `${day} ${dateParts.month} ${dateParts.year}`,
+    time: formatTimeAttribute(event.startsAt),
+    formattedTime: formatTime(event.startsAt),
+    endTime: formatTimeAttribute(event.endsAt),
+    formattedEndTime: formatTime(event.endsAt),
+    price: event.price,
+    priceLabel: `${event.price} € par personne`,
+    priceDetails: event.priceDetails,
+  };
+}
+
+export async function getEvents(limit = null) {
+  const events = await EventMapper.findUpcomingEvents(new Date(), limit);
+  return events.map(presentEvent);
+}
+
+export async function getNextEvent(fromDate = new Date()) {
+  const event = await EventMapper.findNextEvent(fromDate);
+  return event ? presentEvent(event) : null;
+}
+
+function groupEventsByYearAndMonth(events, currentDate = new Date()) {
+  const currentDateParts = getDateParts(currentDate);
+  const years = [];
+
+  for (const event of events) {
+    let yearGroup = years.find(({ year }) => year === event.year);
+
+    if (!yearGroup) {
+      yearGroup = { year: event.year, months: [] };
+      years.push(yearGroup);
+    }
+
+    let monthGroup = yearGroup.months.find(({ month }) => month === event.month);
+
+    if (!monthGroup) {
+      monthGroup = {
+        month: event.month,
+        isCurrentMonth: event.year === currentDateParts.year && event.month === currentDateParts.month,
+        events: [],
+      };
+      yearGroup.months.push(monthGroup);
+    }
+
+    monthGroup.events.push(event);
+  }
+
+  return years;
+}
+
+export async function getEventsPageData() {
+  const events = await getEvents();
+
+  return {
+    title: "Événements à venir | Le Carrousel",
+    description: "Consultez tous les prochains bals, concerts et rendez-vous du Carrousel.",
+    currentYear: new Date().getFullYear(),
+    eventYears: groupEventsByYearAndMonth(events),
+  };
+}
+
+export async function getEventPageData(slug) {
+  const storedEvent = await EventMapper.findEventBySlug(slug);
+
+  if (!storedEvent) {
     return null;
   }
+
+  const event = presentEvent(storedEvent);
 
   return {
     title: `${event.title} | Le Carrousel`,

@@ -110,6 +110,12 @@
   font-size: var(--font-size-xl);
 }
 
+.hero__date-year {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
+}
+
 .hero__event-name {
   margin-bottom: var(--space-2);
   font-family: var(--font-family-heading);
@@ -202,7 +208,8 @@
   }
 
   .hero__date-day,
-  .hero__date-month {
+  .hero__date-month,
+  .hero__date-year {
     display: inline;
   }
 

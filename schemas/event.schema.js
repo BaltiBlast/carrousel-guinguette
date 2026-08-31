@@ -21,7 +21,7 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      maxlength: 2000,
+      maxlength: 5000,
     },
     startsAt: {
       type: Date,
@@ -43,22 +43,10 @@ const eventSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    priceLabel: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 100,
-    },
     priceDetails: {
       type: String,
       trim: true,
       maxlength: 500,
-      default: null,
-    },
-    icon: {
-      type: String,
-      trim: true,
-      maxlength: 300,
       default: null,
     },
   },

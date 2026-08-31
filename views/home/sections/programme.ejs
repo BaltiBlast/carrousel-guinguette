@@ -6,19 +6,27 @@
       <% events.forEach((event) => { %>
         <article class="event-card" aria-labelledby="event-<%= event.slug %>-title">
           <time class="event-card__date" datetime="<%= event.date %>">
-            <%= event.day %> <span class="event-card__date-month"><%= event.month %></span>
+            <span class="event-card__date-day"><%= event.day %></span>
+            <span class="event-card__date-month"><%= event.month %> <%= event.year %></span>
           </time>
-          <img class="event-card__icon" src="<%= event.icon %>" alt="" width="1536" height="1536" loading="lazy" decoding="async" />
           <h3 class="event-card__title" id="event-<%= event.slug %>-title"><%= event.title %></h3>
           <p class="event-card__meta">
-            <time datetime="<%= event.time %>"><%= event.formattedTime %></time>
-            <span><data value="<%= event.price %>"><%= event.price %> €</data> par personne</span>
+            <span>
+              <time datetime="<%= event.time %>"><%= event.formattedTime %></time>
+              –
+              <time datetime="<%= event.endTime %>"><%= event.formattedEndTime %></time>
+            </span>
+            <data value="<%= event.price %>"><%= event.priceLabel %></data>
           </p>
           <a class="button event-card__link" href="/evenements/<%= event.slug %>">
             Voir le détail<span class="visually-hidden"> de <%= event.title %></span>
           </a>
         </article>
       <% }) %>
+    </div>
+
+    <div class="programme__footer">
+      <a class="button programme__all-events" href="/evenements">Voir tout le programme</a>
     </div>
   </div>
 </section>
