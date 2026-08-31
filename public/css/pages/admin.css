@@ -586,6 +586,38 @@
 .admin-event-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); padding: var(--space-8); margin-top: var(--space-8); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); }
 .admin-event-form__wide { grid-column: 1 / -1; }
 .admin-event-form__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.admin-event-assistant { display: grid; width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-4) var(--space-6); align-items: center; padding: var(--space-5); border: var(--border-width) solid rgb(7 87 47 / 24%); border-radius: var(--radius-md); background: var(--color-primary-light); }
+.admin-event-assistant > * { min-width: 0; }
+.admin-event-assistant h2 { font-size: var(--font-size-lg); }
+.admin-event-assistant p { margin-top: var(--space-1); color: var(--color-text-muted); font-size: var(--font-size-sm); }
+.admin-event-assistant__status { grid-column: 1 / -1; margin: 0 !important; font-weight: var(--font-weight-semibold); }
+.admin-event-assistant__status.is-error { color: var(--color-accent); }
+.admin-event-suggestion { width: 100%; min-width: 0; grid-column: 1 / -1; justify-self: stretch; padding: var(--space-5); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface); overflow-wrap: anywhere; }
+.admin-event-suggestion[hidden] { display: none; }
+.admin-event-suggestion h3 { margin-bottom: var(--space-4); font-size: var(--font-size-md); }
+.admin-event-suggestion dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.admin-event-suggestion dl > div,
+.admin-event-suggestion dd,
+.admin-event-suggestion__description { min-width: 0; max-width: 100%; }
+.admin-event-suggestion dt { color: var(--color-text-muted); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); text-transform: uppercase; }
+.admin-event-suggestion dd { margin-top: var(--space-1); font-weight: var(--font-weight-semibold); }
+.admin-event-suggestion__description { padding-block: var(--space-5); color: var(--color-text-muted); }
+.admin-event-suggestion__description > * + * { margin-top: var(--space-3); }
+.admin-event-suggestion__description h2 { font-size: var(--font-size-lg); }
+.admin-event-suggestion__description h3 { font-size: var(--font-size-md); }
+.admin-event-suggestion__description ul,
+.admin-event-suggestion__description ol { padding-left: var(--space-6); }
+.admin-event-suggestion__description blockquote { padding-left: var(--space-4); border-left: 0.25rem solid var(--color-highlight); }
+.admin-event-suggestion__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.admin-rich-text { background: var(--color-surface); }
+.admin-rich-text.ql-container { min-height: 16rem; border-color: var(--color-border); border-radius: 0 0 var(--radius-sm) var(--radius-sm); font-family: var(--font-family-body); font-size: var(--font-size-md); }
+.admin-rich-text .ql-editor { min-height: 16rem; line-height: 1.65; }
+.admin-field .ql-toolbar { border-color: var(--color-border); border-radius: var(--radius-sm) var(--radius-sm) 0 0; background: var(--color-background); }
+.admin-field .ql-toolbar button { min-height: auto; }
+.admin-field:focus-within .ql-toolbar,
+.admin-field:focus-within .admin-rich-text.ql-container { border-color: var(--color-primary); }
+.admin-rich-text[aria-invalid="true"].ql-container { border-color: var(--color-accent); }
+.admin-rich-text__error { color: var(--color-accent); }
 
 @media (max-width: 56rem) {
   .admin-shell {
@@ -651,5 +683,16 @@
   .admin-event__actions form { width: 100%; }
   .admin-event-form { grid-template-columns: minmax(0, 1fr); padding: var(--space-5); }
   .admin-event-form__wide { grid-column: auto; }
+  .admin-event-assistant { grid-template-columns: 1fr; }
+  .admin-event-assistant .button,
+  .admin-event-suggestion__actions .button { width: 100%; }
+  .admin-event-suggestion dl { grid-template-columns: 1fr; }
   .admin-event-form__actions .button { width: 100%; }
+}
+
+@media (max-width: 22rem) {
+  .admin-content { padding-inline: var(--space-4); }
+  .admin-event-form { padding: var(--space-4); }
+  .admin-event-assistant,
+  .admin-event-suggestion { padding: var(--space-4); }
 }

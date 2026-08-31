@@ -13,6 +13,7 @@ app.set("layout", "layouts/main");
 app.set("trust proxy", 1);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(import.meta.dirname + "/public"));
+app.use("/vendor/quill", express.static(import.meta.dirname + "/node_modules/quill/dist"));
 
 app.use(expressLayouts);
 app.use(router);

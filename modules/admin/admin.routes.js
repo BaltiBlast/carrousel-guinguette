@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, json } from "express";
 import * as controller from "./admin.controllers.js";
 import * as middleware from "./admin.middlewares.js";
 
@@ -11,6 +11,7 @@ router.post("/connexion/lien", controller.confirmMagicLink);
 router.get("/tableau-de-bord", middleware.requireAuthentication, controller.showDashboard);
 router.get("/evenements", middleware.requireAuthentication, controller.showEvents);
 router.get("/evenements/nouveau", middleware.requireAuthentication, controller.showCreateEvent);
+router.post("/evenements/optimiser", middleware.requireAuthentication, json({ limit: "20kb" }), controller.optimizeEvent);
 router.post("/evenements", middleware.requireAuthentication, controller.createEvent);
 router.get("/evenements/:eventId/modifier", middleware.requireAuthentication, controller.showEditEvent);
 router.post("/evenements/:eventId", middleware.requireAuthentication, controller.updateEvent);

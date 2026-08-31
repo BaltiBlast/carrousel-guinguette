@@ -8,7 +8,19 @@
 .event-detail__content { padding: clamp(var(--space-8), 6vw, var(--space-16)); }
 .event-detail__eyebrow { margin-bottom: var(--space-2); color: var(--color-accent); font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; }
 .event-detail__title { margin-bottom: var(--space-5); font-size: var(--font-size-display); }
-.event-detail__description { margin-bottom: var(--space-8); color: var(--color-text-muted); font-size: var(--font-size-md); white-space: pre-line; }
+.event-detail__description { margin-bottom: var(--space-8); color: var(--color-text-muted); font-size: var(--font-size-md); }
+.event-detail__description > * + * { margin-top: var(--space-4); }
+.event-detail__description h2,
+.event-detail__description h3 { color: var(--color-text); }
+.event-detail__description h2 { margin-top: var(--space-8); font-size: var(--font-size-xl); }
+.event-detail__description h3 { margin-top: var(--space-6); font-size: var(--font-size-lg); }
+.event-detail__description strong { color: var(--color-text); font-weight: var(--font-weight-bold); }
+.event-detail__description em { font-style: italic; }
+.event-detail__description ul,
+.event-detail__description ol { padding-left: var(--space-6); }
+.event-detail__description li + li { margin-top: var(--space-2); }
+.event-detail__description blockquote { padding: var(--space-3) var(--space-5); border-left: 0.25rem solid var(--color-highlight); color: var(--color-text); background: var(--color-background); }
+.event-detail__description a { color: var(--color-primary); font-weight: var(--font-weight-semibold); text-decoration: underline; text-underline-offset: 0.2em; }
 .event-detail__information { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-block: var(--space-6) var(--space-8); }
 .event-detail__information > div { min-width: 0; padding: var(--space-5); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-md); background-color: var(--color-background); }
 .event-detail__information dt { color: var(--color-text-muted); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); text-transform: uppercase; }

@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { Resend } from "resend";
 import { EventMapper, MagicLinkTokenMapper, ReviewMapper, SessionMapper, UserMapper } from "../../model/index.mapper.js";
+import { eventDescriptionToText, plainEventDescriptionToHtml, sanitizeEventDescription } from "../evenements/event-description.js";
 
 const LOGIN_REQUEST_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_REQUEST_LIMIT = 5;
@@ -322,8 +323,8 @@ export async function getDashboardPageData(user, actionMessage = null) {
 
   return {
     layout: "layouts/admin",
-    title: "Tableau de bord | Administration du Carrousel",
-    description: "Tableau de bord de l’administration du Carrousel.",
+    title: "Livre d’or | Administration du Carrousel",
+    description: "Gestion des avis du livre d’or du Carrousel.",
     pageClass: "admin-page",
     reviews,
     counts,
@@ -377,9 +378,11 @@ function slugify(value) {
 }
 
 function normalizeEventInput(input) {
+  const descriptionHtml = sanitizeEventDescription(input.descriptionHtml);
   const event = {
     title: typeof input.title === "string" ? input.title.trim() : "",
-    description: typeof input.description === "string" ? input.description.trim() : "",
+    description: eventDescriptionToText(descriptionHtml),
+    descriptionHtml,
     startsAt: parseDateTimeLocal(input.startsAt),
     endsAt: parseDateTimeLocal(input.endsAt),
     price: Number(input.price),
@@ -397,6 +400,7 @@ function normalizeEventInput(input) {
 function presentAdminEvent(event) {
   return {
     id: event._id.toString(), slug: event.slug, title: event.title, description: event.description,
+    descriptionHtml: event.descriptionHtml || plainEventDescriptionToHtml(event.description),
     startsAt: formatDateTimeLocal(event.startsAt), endsAt: formatDateTimeLocal(event.endsAt),
     formattedStart: formatEventDate(event.startsAt), formattedEnd: formatEventDate(event.endsAt),
     price: event.price, priceDetails: event.priceDetails || "",
@@ -452,4 +456,82 @@ export async function updateEvent(eventId, input) {
 export async function deleteEvent(eventId) {
   if (!/^[a-f\d]{24}$/i.test(eventId)) return null;
   return EventMapper.deleteEventById(eventId);
+}
+
+function getGeminiConfiguration() {
+  return {
+    apiKey: getRequiredEnvironmentVariable("GEMINI_API_KEY"),
+    model: getRequiredEnvironmentVariable("GEMINI_MODEL"),
+  };
+}
+
+export async function optimizeEventWithGemini(input) {
+  const descriptionHtml = sanitizeEventDescription(input.descriptionHtml);
+  const description = eventDescriptionToText(descriptionHtml);
+  const title = typeof input.title === "string" ? input.title.trim() : "";
+  const priceDetails = typeof input.priceDetails === "string" ? input.priceDetails.trim() : "";
+
+  if (title.length < 3 || title.length > 150) throw new EventValidationError("Renseignez un titre valide avant de lancer l’optimisation.");
+  if (description.length < 20 || description.length > 5000) throw new EventValidationError("Renseignez une description d’au moins 20 caractères avant de lancer l’optimisation.");
+
+  const { apiKey, model } = getGeminiConfiguration();
+  const prompt = `Tu es un assistant éditorial francophone pour Le Carrousel, une guinguette située à Hannonville-sous-les-Côtes.
+Corrige et optimise les informations de cet événement pour une lecture naturelle et un référencement local pertinent.
+Ne modifie aucune donnée factuelle, n’invente aucune prestation, aucun horaire, aucun prix et aucune information absente.
+Conserve le ton chaleureux du texte. Le titre doit rester concis et descriptif.
+La description doit être précise, structurée avec des titres et des paragraphes, et proche de la longueur d’origine : ne la résume pas excessivement.
+Dans descriptionHtml, utilise uniquement les balises <p>, <br>, <h2>, <h3>, <strong>, <em>, <u>, <s>, <blockquote>, <ol>, <ul>, <li> et <a href="https://…">.
+Structure le contenu avec des titres de niveau 2 ou 3 lorsque sa longueur le justifie. Utilise le gras avec parcimonie pour les informations réellement importantes, et les listes lorsqu’elles améliorent vraiment la lecture.
+N’ajoute aucun lien qui n’était pas déjà présent dans le texte fourni.
+Dans priceDetails, corrige uniquement ce qui est compris dans le tarif sans répéter le montant du prix.
+
+Informations fournies :
+${JSON.stringify({
+    title,
+    descriptionHtml,
+    startsAt: input.startsAt || "",
+    endsAt: input.endsAt || "",
+    price: input.price || "",
+    priceDetails,
+  })}`;
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+    signal: AbortSignal.timeout(120000),
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.35,
+        thinkingConfig: { thinkingLevel: "minimal" },
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: {
+            title: { type: "STRING" },
+            descriptionHtml: { type: "STRING" },
+            priceDetails: { type: "STRING" },
+          },
+          required: ["title", "descriptionHtml", "priceDetails"],
+        },
+      },
+    }),
+  });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) throw new Error(`Gemini a répondu avec le statut ${response.status}: ${payload?.error?.message || "réponse inconnue"}`);
+
+  const responseText = payload?.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("");
+  if (!responseText) throw new Error("Gemini n’a retourné aucune suggestion.");
+
+  const suggestion = JSON.parse(responseText);
+  const optimizedTitle = typeof suggestion.title === "string" ? suggestion.title.trim().slice(0, 150) : title;
+  const optimizedDescriptionHtml = sanitizeEventDescription(suggestion.descriptionHtml);
+  const optimizedDescription = eventDescriptionToText(optimizedDescriptionHtml);
+  const optimizedPriceDetails = typeof suggestion.priceDetails === "string" ? suggestion.priceDetails.trim().slice(0, 500) : priceDetails;
+
+  if (optimizedTitle.length < 3 || optimizedDescription.length < 20 || optimizedDescription.length > 5000) {
+    throw new Error("La suggestion retournée par Gemini n’est pas exploitable.");
+  }
+
+  return { title: optimizedTitle, descriptionHtml: optimizedDescriptionHtml, priceDetails: optimizedPriceDetails };
 }

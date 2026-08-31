@@ -1,5 +1,126 @@
 const filterGroup = document.querySelector("[data-review-filters]");
 
+const richTextEditor = document.querySelector("[data-rich-text-editor]");
+let eventDescriptionEditor = null;
+
+if (richTextEditor && window.Quill) {
+  const form = richTextEditor.closest("form");
+  const input = form.querySelector("[data-rich-text-input]");
+  const error = form.querySelector("[data-rich-text-error]");
+  const quill = new window.Quill(richTextEditor, {
+    theme: "snow",
+    formats: ["header", "bold", "italic", "underline", "strike", "blockquote", "list", "link"],
+    modules: {
+      toolbar: [
+        [{ header: [2, 3, false] }],
+        ["bold", "italic", "underline", "strike"],
+        ["blockquote"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["link"],
+        ["clean"],
+      ],
+    },
+  });
+  eventDescriptionEditor = quill;
+
+  if (input.value) quill.clipboard.dangerouslyPasteHTML(input.value);
+
+  quill.on("text-change", () => {
+    richTextEditor.setAttribute("aria-invalid", "false");
+    error.hidden = true;
+  });
+
+  form.addEventListener("submit", (event) => {
+    const description = quill.getText().trim();
+    input.value = typeof quill.getSemanticHTML === "function" ? quill.getSemanticHTML() : quill.root.innerHTML;
+
+    if (description.length >= 20 && description.length <= 5000) return;
+
+    event.preventDefault();
+    error.textContent = description.length < 20
+      ? "La description doit contenir au moins 20 caractères."
+      : "La description ne peut pas dépasser 5 000 caractères.";
+    error.hidden = false;
+    richTextEditor.setAttribute("aria-invalid", "true");
+    quill.focus();
+  });
+}
+
+const eventAssistant = document.querySelector("[data-event-assistant]");
+
+if (eventAssistant && eventDescriptionEditor) {
+  const form = eventAssistant.closest("form");
+  const optimizeButton = eventAssistant.querySelector("[data-optimize-event]");
+  const applyButton = eventAssistant.querySelector("[data-apply-suggestion]");
+  const dismissButton = eventAssistant.querySelector("[data-dismiss-suggestion]");
+  const status = eventAssistant.querySelector("[data-optimize-status]");
+  const suggestionPanel = eventAssistant.querySelector("[data-event-suggestion]");
+  const suggestionTitle = eventAssistant.querySelector("[data-suggestion-title]");
+  const suggestionPriceDetails = eventAssistant.querySelector("[data-suggestion-price-details]");
+  const suggestionDescription = eventAssistant.querySelector("[data-suggestion-description]");
+  let suggestion = null;
+
+  function showStatus(message, isError = false) {
+    status.textContent = message;
+    status.classList.toggle("is-error", isError);
+    status.hidden = false;
+  }
+
+  optimizeButton.addEventListener("click", async () => {
+    const descriptionInput = form.querySelector("[data-rich-text-input]");
+    descriptionInput.value = typeof eventDescriptionEditor.getSemanticHTML === "function"
+      ? eventDescriptionEditor.getSemanticHTML()
+      : eventDescriptionEditor.root.innerHTML;
+    const formData = new FormData(form);
+
+    optimizeButton.disabled = true;
+    optimizeButton.setAttribute("aria-busy", "true");
+    suggestionPanel.hidden = true;
+    showStatus("Votre contenu est en cours de correction et d’optimisation… Le traitement peut prendre plus d’une minute.");
+
+    try {
+      const response = await fetch("/admin/evenements/optimiser", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(formData)),
+      });
+      const result = await response.json();
+
+      if (!response.ok) throw new Error(result.error || "L’optimisation a échoué.");
+
+      suggestion = result;
+      suggestionTitle.textContent = result.title;
+      suggestionPriceDetails.textContent = result.priceDetails || "Aucune précision tarifaire";
+      suggestionDescription.innerHTML = result.descriptionHtml;
+      suggestionPanel.hidden = false;
+      showStatus("Une suggestion est prête. Vérifiez-la avant de l’appliquer.");
+    } catch (error) {
+      suggestion = null;
+      showStatus(error.message, true);
+    } finally {
+      optimizeButton.disabled = false;
+      optimizeButton.removeAttribute("aria-busy");
+    }
+  });
+
+  applyButton.addEventListener("click", () => {
+    if (!suggestion) return;
+    form.elements.title.value = suggestion.title;
+    form.elements.priceDetails.value = suggestion.priceDetails;
+    eventDescriptionEditor.setContents([]);
+    eventDescriptionEditor.clipboard.dangerouslyPasteHTML(suggestion.descriptionHtml);
+    suggestionPanel.hidden = true;
+    showStatus("La suggestion a été appliquée. Vous pouvez encore la modifier avant l’enregistrement.");
+    suggestion = null;
+  });
+
+  dismissButton.addEventListener("click", () => {
+    suggestion = null;
+    suggestionPanel.hidden = true;
+    showStatus("Votre texte actuel est conservé.");
+  });
+}
+
 if (filterGroup) {
   const filterButtons = [...filterGroup.querySelectorAll("[data-review-filter]")];
   const reviews = [...document.querySelectorAll("[data-review-status]")];

@@ -6,12 +6,38 @@
     <div class="admin-content__heading"><div><p class="admin-content__eyebrow">Programme</p><h1><%= event.id ? "Modifier l’événement" : "Créer un événement" %></h1><p>Les informations enregistrées seront immédiatement visibles sur le site.</p></div></div>
     <% if (error) { %><p class="admin-form__error" role="alert"><%= error %></p><% } %>
     <form class="admin-event-form" action="<%= event.id ? `/admin/evenements/${event.id}` : '/admin/evenements' %>" method="post">
+      <section class="admin-event-assistant admin-event-form__wide" data-event-assistant>
+        <div>
+          <h2>Assistant de rédaction</h2>
+          <p>Faites corriger et optimiser le titre, la description et les précisions tarifaires. Vos champs ne seront modifiés qu’après votre confirmation.</p>
+        </div>
+        <button class="button button--outline" type="button" data-optimize-event>Corriger et optimiser</button>
+        <p class="admin-event-assistant__status" data-optimize-status role="status" hidden></p>
+        <div class="admin-event-suggestion" data-event-suggestion hidden>
+          <h3>Suggestion proposée</h3>
+          <dl>
+            <div><dt>Titre</dt><dd data-suggestion-title></dd></div>
+            <div><dt>Précisions tarifaires</dt><dd data-suggestion-price-details></dd></div>
+          </dl>
+          <div class="admin-event-suggestion__description" data-suggestion-description></div>
+          <div class="admin-event-suggestion__actions">
+            <button class="button" type="button" data-apply-suggestion>Appliquer la suggestion</button>
+            <button class="button button--outline" type="button" data-dismiss-suggestion>Conserver mon texte</button>
+          </div>
+        </div>
+      </section>
       <div class="admin-field admin-event-form__wide"><label for="event-title">Titre *</label><input id="event-title" name="title" type="text" minlength="3" maxlength="150" value="<%= event.title || '' %>" required /></div>
       <div class="admin-field"><label for="event-start">Début *</label><input id="event-start" name="startsAt" type="datetime-local" value="<%= event.startsAt || '' %>" required /></div>
       <div class="admin-field"><label for="event-end">Fin *</label><input id="event-end" name="endsAt" type="datetime-local" value="<%= event.endsAt || '' %>" required /></div>
       <div class="admin-field"><label for="event-price">Tarif par personne *</label><input id="event-price" name="price" type="number" min="0" max="10000" step="0.01" value="<%= event.price ?? '' %>" required /></div>
       <div class="admin-field"><label for="event-price-details">Compris dans le tarif</label><input id="event-price-details" name="priceDetails" type="text" maxlength="500" value="<%= event.priceDetails || '' %>" /></div>
-      <div class="admin-field admin-event-form__wide"><label for="event-description">Description *</label><textarea id="event-description" name="description" rows="14" minlength="20" maxlength="5000" required><%= event.description || '' %></textarea><small>5 000 caractères maximum.</small></div>
+      <div class="admin-field admin-event-form__wide">
+        <span id="event-description-label">Description *</span>
+        <textarea name="descriptionHtml" data-rich-text-input hidden><%= event.descriptionHtml || '' %></textarea>
+        <div class="admin-rich-text" data-rich-text-editor aria-labelledby="event-description-label"></div>
+        <small>Structurez votre description avec des titres, paragraphes, listes, liens et mises en forme. 5 000 caractères maximum.</small>
+        <small class="admin-rich-text__error" data-rich-text-error role="alert" hidden>La description doit contenir au moins 20 caractères.</small>
+      </div>
       <div class="admin-event-form__actions admin-event-form__wide"><button class="button" type="submit"><%= event.id ? "Enregistrer les modifications" : "Créer l’événement" %></button><a class="button button--outline" href="/admin/evenements">Annuler</a></div>
     </form>
   </main>

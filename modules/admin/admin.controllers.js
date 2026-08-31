@@ -113,6 +113,20 @@ export function showCreateEvent(req, res) {
   return res.render("admin/evenement-form", service.getEventFormPageData(req.adminUser));
 }
 
+export async function optimizeEvent(req, res) {
+  try {
+    const suggestion = await service.optimizeEventWithGemini(req.body);
+    return res.json(suggestion);
+  } catch (error) {
+    if (error instanceof service.EventValidationError) {
+      return res.status(422).json({ error: error.message });
+    }
+
+    console.error("Échec de l’optimisation Gemini :", error.message);
+    return res.status(502).json({ error: "Le service d’optimisation est momentanément indisponible. Réessayez dans quelques instants." });
+  }
+}
+
 export async function createEvent(req, res, next) {
   try {
     await service.createEvent(req.body);

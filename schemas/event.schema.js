@@ -23,6 +23,11 @@ const eventSchema = new mongoose.Schema(
       trim: true,
       maxlength: 5000,
     },
+    descriptionHtml: {
+      type: String,
+      required: true,
+      maxlength: 10000,
+    },
     startsAt: {
       type: Date,
       required: true,

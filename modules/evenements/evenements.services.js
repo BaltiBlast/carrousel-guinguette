@@ -1,4 +1,5 @@
 import { EventMapper } from "../../model/index.mapper.js";
+import { plainEventDescriptionToHtml, sanitizeEventDescription } from "./event-description.js";
 
 const EVENT_TIME_ZONE = "Europe/Paris";
 
@@ -64,6 +65,9 @@ function presentEvent(event) {
     slug: event.slug,
     title: event.title,
     description: event.description,
+    descriptionHtml: event.descriptionHtml
+      ? sanitizeEventDescription(event.descriptionHtml)
+      : plainEventDescriptionToHtml(event.description),
     date: formatDateAttribute(event.startsAt),
     day,
     month: dateParts.month,
