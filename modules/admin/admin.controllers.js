@@ -100,6 +100,56 @@ export function rejectReview(req, res, next) {
   return updateReviewStatus(req, res, next, "rejected");
 }
 
+const eventMessages = { created: "L’événement a été créé.", updated: "L’événement a été modifié.", deleted: "L’événement a été supprimé." };
+
+export async function showEvents(req, res, next) {
+  try {
+    const message = typeof req.query.action === "string" ? eventMessages[req.query.action] : null;
+    return res.render("admin/evenements", await service.getEventsAdminPageData(req.adminUser, message));
+  } catch (error) { return next(error); }
+}
+
+export function showCreateEvent(req, res) {
+  return res.render("admin/evenement-form", service.getEventFormPageData(req.adminUser));
+}
+
+export async function createEvent(req, res, next) {
+  try {
+    await service.createEvent(req.body);
+    return res.redirect(303, "/admin/evenements?action=created");
+  } catch (error) {
+    if (error instanceof service.EventValidationError) return res.status(422).render("admin/evenement-form", service.getEventFormPageData(req.adminUser, req.body, error.message));
+    return next(error);
+  }
+}
+
+export async function showEditEvent(req, res, next) {
+  try {
+    const event = await service.getEventForEdition(req.params.eventId);
+    if (!event) return res.status(404).send("Événement introuvable");
+    return res.render("admin/evenement-form", service.getEventFormPageData(req.adminUser, event));
+  } catch (error) { return next(error); }
+}
+
+export async function updateEvent(req, res, next) {
+  try {
+    const event = await service.updateEvent(req.params.eventId, req.body);
+    if (!event) return res.status(404).send("Événement introuvable");
+    return res.redirect(303, "/admin/evenements?action=updated");
+  } catch (error) {
+    if (error instanceof service.EventValidationError) return res.status(422).render("admin/evenement-form", service.getEventFormPageData(req.adminUser, { ...req.body, id: req.params.eventId }, error.message));
+    return next(error);
+  }
+}
+
+export async function deleteEvent(req, res, next) {
+  try {
+    const event = await service.deleteEvent(req.params.eventId);
+    if (!event) return res.status(404).send("Événement introuvable");
+    return res.redirect(303, "/admin/evenements?action=deleted");
+  } catch (error) { return next(error); }
+}
+
 export async function logout(req, res, next) {
   try {
     await service.deleteSession(getSessionToken(req));

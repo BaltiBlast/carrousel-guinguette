@@ -16,6 +16,10 @@ class Event extends CoreMapper {
     return this.model.findOne({ slug }).lean();
   }
 
+  findEventById(eventId) {
+    return this.model.findById(eventId).lean();
+  }
+
   findAllEvents() {
     return this.model.find().sort({ startsAt: 1 }).lean();
   }

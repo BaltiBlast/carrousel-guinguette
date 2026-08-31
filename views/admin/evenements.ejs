@@ -1,0 +1,27 @@
+<%- include("partials/header") %>
+<div class="admin-shell">
+  <%- include("partials/sidebar", { activePage: "events" }) %>
+  <main class="admin-content">
+    <div class="admin-content__heading">
+      <div><p class="admin-content__eyebrow">Programme</p><h1>Gestion des événements</h1><p>Créez, modifiez et consultez les rendez-vous du Carrousel.</p></div>
+      <a class="button" href="/admin/evenements/nouveau">Créer un événement</a>
+    </div>
+    <% if (actionMessage) { %><p class="admin-action-message" role="status"><%= actionMessage %></p><% } %>
+
+    <section class="admin-events" aria-labelledby="upcoming-events-title">
+      <div class="admin-events__heading"><div><p class="admin-content__eyebrow">Programmation</p><h2 id="upcoming-events-title">Événements à venir</h2></div><strong><%= upcomingEvents.length %></strong></div>
+      <div class="admin-events__list">
+        <% if (!upcomingEvents.length) { %><p class="admin-reviews__empty">Aucun événement à venir.</p><% } %>
+        <% upcomingEvents.forEach((event) => { %><%- include("partials/event-row", { event, isPast: false }) %><% }) %>
+      </div>
+    </section>
+
+    <section class="admin-events" aria-labelledby="past-events-title">
+      <div class="admin-events__heading"><div><p class="admin-content__eyebrow">Archives</p><h2 id="past-events-title">Historique des événements passés</h2></div><strong><%= pastEvents.length %></strong></div>
+      <div class="admin-events__list">
+        <% if (!pastEvents.length) { %><p class="admin-reviews__empty">Aucun événement passé.</p><% } %>
+        <% pastEvents.forEach((event) => { %><%- include("partials/event-row", { event, isPast: true }) %><% }) %>
+      </div>
+    </section>
+  </main>
+</div>

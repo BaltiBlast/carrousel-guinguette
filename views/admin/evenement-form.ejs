@@ -1,0 +1,18 @@
+<%- include("partials/header") %>
+<div class="admin-shell">
+  <%- include("partials/sidebar", { activePage: "events" }) %>
+  <main class="admin-content">
+    <a class="admin-form__back" href="/admin/evenements">← Retour aux événements</a>
+    <div class="admin-content__heading"><div><p class="admin-content__eyebrow">Programme</p><h1><%= event.id ? "Modifier l’événement" : "Créer un événement" %></h1><p>Les informations enregistrées seront immédiatement visibles sur le site.</p></div></div>
+    <% if (error) { %><p class="admin-form__error" role="alert"><%= error %></p><% } %>
+    <form class="admin-event-form" action="<%= event.id ? `/admin/evenements/${event.id}` : '/admin/evenements' %>" method="post">
+      <div class="admin-field admin-event-form__wide"><label for="event-title">Titre *</label><input id="event-title" name="title" type="text" minlength="3" maxlength="150" value="<%= event.title || '' %>" required /></div>
+      <div class="admin-field"><label for="event-start">Début *</label><input id="event-start" name="startsAt" type="datetime-local" value="<%= event.startsAt || '' %>" required /></div>
+      <div class="admin-field"><label for="event-end">Fin *</label><input id="event-end" name="endsAt" type="datetime-local" value="<%= event.endsAt || '' %>" required /></div>
+      <div class="admin-field"><label for="event-price">Tarif par personne *</label><input id="event-price" name="price" type="number" min="0" max="10000" step="0.01" value="<%= event.price ?? '' %>" required /></div>
+      <div class="admin-field"><label for="event-price-details">Compris dans le tarif</label><input id="event-price-details" name="priceDetails" type="text" maxlength="500" value="<%= event.priceDetails || '' %>" /></div>
+      <div class="admin-field admin-event-form__wide"><label for="event-description">Description *</label><textarea id="event-description" name="description" rows="14" minlength="20" maxlength="5000" required><%= event.description || '' %></textarea><small>5 000 caractères maximum.</small></div>
+      <div class="admin-event-form__actions admin-event-form__wide"><button class="button" type="submit"><%= event.id ? "Enregistrer les modifications" : "Créer l’événement" %></button><a class="button button--outline" href="/admin/evenements">Annuler</a></div>
+    </form>
+  </main>
+</div>

@@ -1,0 +1,14 @@
+<article class="admin-event <%= isPast ? 'admin-event--past' : '' %>">
+  <div class="admin-event__content">
+    <div class="admin-event__header"><h3><%= event.title %></h3><span class="admin-status <%= isPast ? 'admin-status--rejected' : 'admin-status--published' %>"><%= isPast ? "Passé" : "À venir" %></span></div>
+    <p class="admin-event__date">Du <%= event.formattedStart %> au <%= event.formattedEnd %></p>
+    <p class="admin-event__price"><%= event.price %> € par personne<% if (event.priceDetails) { %> · <%= event.priceDetails %><% } %></p>
+  </div>
+  <div class="admin-event__actions">
+    <a class="button button--outline" href="/evenements/<%= event.slug %>" target="_blank" rel="noopener noreferrer">Voir</a>
+    <a class="button" href="/admin/evenements/<%= event.id %>/modifier">Modifier</a>
+    <form action="/admin/evenements/<%= event.id %>/supprimer" method="post" data-confirm="Supprimer définitivement cet événement ?">
+      <button class="button button--outline admin-event__delete" type="submit">Supprimer</button>
+    </form>
+  </div>
+</article>

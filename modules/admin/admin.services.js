@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { Resend } from "resend";
-import { MagicLinkTokenMapper, ReviewMapper, SessionMapper, UserMapper } from "../../model/index.mapper.js";
+import { EventMapper, MagicLinkTokenMapper, ReviewMapper, SessionMapper, UserMapper } from "../../model/index.mapper.js";
 
 const LOGIN_REQUEST_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_REQUEST_LIMIT = 5;
@@ -330,4 +330,126 @@ export async function getDashboardPageData(user, actionMessage = null) {
     user,
     actionMessage,
   };
+}
+
+export class EventValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "EventValidationError";
+  }
+}
+
+const EVENT_TIME_ZONE = "Europe/Paris";
+
+function formatEventDate(date) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: EVENT_TIME_ZONE,
+  }).format(date);
+}
+
+function formatDateTimeLocal(date) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("fr-FR", {
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+      hourCycle: "h23", timeZone: EVENT_TIME_ZONE,
+    }).formatToParts(date).filter(({ type }) => type !== "literal").map(({ type, value }) => [type, value]),
+  );
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}
+
+function parseDateTimeLocal(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return null;
+  const [year, month, day, hour, minute] = value.match(/\d+/g).map(Number);
+  const guess = Date.UTC(year, month - 1, day, hour, minute);
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
+    year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+    hourCycle: "h23", timeZone: EVENT_TIME_ZONE,
+  }).formatToParts(new Date(guess)).filter(({ type }) => type !== "literal").map(({ type, value }) => [type, value]));
+  const represented = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day), Number(parts.hour), Number(parts.minute));
+  const date = new Date(guess - (represented - guess));
+  return Number.isNaN(date.getTime()) || formatDateTimeLocal(date) !== value ? null : date;
+}
+
+function slugify(value) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 100);
+}
+
+function normalizeEventInput(input) {
+  const event = {
+    title: typeof input.title === "string" ? input.title.trim() : "",
+    description: typeof input.description === "string" ? input.description.trim() : "",
+    startsAt: parseDateTimeLocal(input.startsAt),
+    endsAt: parseDateTimeLocal(input.endsAt),
+    price: Number(input.price),
+    priceDetails: typeof input.priceDetails === "string" ? input.priceDetails.trim() || null : null,
+  };
+  if (event.title.length < 3 || event.title.length > 150) throw new EventValidationError("Le titre doit contenir entre 3 et 150 caractères.");
+  if (event.description.length < 20 || event.description.length > 5000) throw new EventValidationError("La description doit contenir entre 20 et 5 000 caractères.");
+  if (!event.startsAt || !event.endsAt) throw new EventValidationError("Les dates de début et de fin sont requises.");
+  if (event.endsAt <= event.startsAt) throw new EventValidationError("La fin doit être postérieure au début de l’événement.");
+  if (!Number.isFinite(event.price) || event.price < 0 || event.price > 10000) throw new EventValidationError("Le tarif saisi n’est pas valide.");
+  if (event.priceDetails && event.priceDetails.length > 500) throw new EventValidationError("La précision tarifaire ne peut pas dépasser 500 caractères.");
+  return event;
+}
+
+function presentAdminEvent(event) {
+  return {
+    id: event._id.toString(), slug: event.slug, title: event.title, description: event.description,
+    startsAt: formatDateTimeLocal(event.startsAt), endsAt: formatDateTimeLocal(event.endsAt),
+    formattedStart: formatEventDate(event.startsAt), formattedEnd: formatEventDate(event.endsAt),
+    price: event.price, priceDetails: event.priceDetails || "",
+  };
+}
+
+function getAdminBaseData(user) {
+  return { layout: "layouts/admin", pageClass: "admin-page", user };
+}
+
+export async function getEventsAdminPageData(user, actionMessage = null) {
+  const events = (await EventMapper.findAllEvents()).map(presentAdminEvent);
+  const now = new Date();
+  return {
+    ...getAdminBaseData(user), title: "Événements | Administration du Carrousel",
+    description: "Gestion des événements du Carrousel.", actionMessage,
+    upcomingEvents: events.filter((event) => new Date(event.endsAt) >= now),
+    pastEvents: events.filter((event) => new Date(event.endsAt) < now).reverse(),
+  };
+}
+
+export function getEventFormPageData(user, event = {}, error = null) {
+  return {
+    ...getAdminBaseData(user), title: `${event.id ? "Modifier" : "Créer"} un événement | Administration`,
+    description: "Formulaire de gestion d’un événement.", event, error,
+  };
+}
+
+async function createUniqueSlug(title) {
+  const base = slugify(title) || "evenement";
+  let slug = base;
+  let suffix = 2;
+  while (await EventMapper.findEventBySlug(slug)) slug = `${base}-${suffix++}`;
+  return slug;
+}
+
+export async function createEvent(input) {
+  const event = normalizeEventInput(input);
+  return EventMapper.createEvent({ ...event, slug: await createUniqueSlug(event.title) });
+}
+
+export async function getEventForEdition(eventId) {
+  if (!/^[a-f\d]{24}$/i.test(eventId)) return null;
+  const event = await EventMapper.findEventById(eventId);
+  return event ? presentAdminEvent(event) : null;
+}
+
+export async function updateEvent(eventId, input) {
+  if (!/^[a-f\d]{24}$/i.test(eventId)) return null;
+  return EventMapper.updateEventById(eventId, normalizeEventInput(input));
+}
+
+export async function deleteEvent(eventId) {
+  if (!/^[a-f\d]{24}$/i.test(eventId)) return null;
+  return EventMapper.deleteEventById(eventId);
 }
