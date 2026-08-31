@@ -3,72 +3,22 @@
     <h2 class="programme__title" id="programme-title">Les prochains rendez-vous</h2>
 
     <div class="programme__grid">
-      <article class="event-card" aria-labelledby="event-musette-title">
-        <time class="event-card__date"> 25 <span class="event-card__date-month">août</span> </time>
-        <img
-          class="event-card__icon"
-          src="/assets/img/icons/accordion-vintage.png"
-          alt=""
-          width="1536"
-          height="1024"
-          loading="lazy"
-          decoding="async"
-        />
-        <h3 class="event-card__title" id="event-musette-title">Après-midi musette</h3>
-        <p class="event-card__meta">
-          <time datetime="14:30">14 h 30</time>
-          <span><data value="12">12 €</data> par personne</span>
-        </p>
-        <a class="button event-card__link" href="#event-musette-title">
-          Voir le détail<span class="visually-hidden"> de l’après-midi musette</span>
-        </a>
-      </article>
-
-      <article class="event-card" aria-labelledby="event-annees-title">
-        <time class="event-card__date"> 1<sup>er</sup> <span class="event-card__date-month">septembre</span> </time>
-        <img
-          class="event-card__icon"
-          src="/assets/img/icons/vinyle-vintage.png"
-          alt=""
-          width="1254"
-          height="1254"
-          loading="lazy"
-          decoding="async"
-        />
-        <h3 class="event-card__title" id="event-annees-title">Les années 70–80</h3>
-        <p class="event-card__meta">
-          <time datetime="14:30">14 h 30</time>
-          <span><data value="12">12 €</data> par personne</span>
-        </p>
-        <a class="button event-card__link" href="#event-annees-title">
-          Voir le détail<span class="visually-hidden"> de la soirée années 70–80</span>
-        </a>
-      </article>
-
-      <article class="event-card" aria-labelledby="event-reprises-title">
-        <time class="event-card__date"> 8 <span class="event-card__date-month">septembre</span> </time>
-        <img
-          class="event-card__icon"
-          src="/assets/img/icons/microphone-vintage.png"
-          alt=""
-          width="1024"
-          height="1536"
-          loading="lazy"
-          decoding="async"
-        />
-        <h3 class="event-card__title" id="event-reprises-title">Reprises 80–2000</h3>
-        <p class="event-card__meta">
-          <time datetime="14:30">14 h 30</time>
-          <span><data value="12">12 €</data> par personne</span>
-        </p>
-        <a class="button event-card__link" href="#event-reprises-title">
-          Voir le détail<span class="visually-hidden"> de la soirée reprises 80–2000</span>
-        </a>
-      </article>
-    </div>
-
-    <div class="programme__footer">
-      <a class="button programme__all-events" href="#programme">Voir tout le programme</a>
+      <% events.forEach((event) => { %>
+        <article class="event-card" aria-labelledby="event-<%= event.slug %>-title">
+          <time class="event-card__date" datetime="<%= event.date %>">
+            <%= event.day %> <span class="event-card__date-month"><%= event.month %></span>
+          </time>
+          <img class="event-card__icon" src="<%= event.icon %>" alt="" width="1536" height="1536" loading="lazy" decoding="async" />
+          <h3 class="event-card__title" id="event-<%= event.slug %>-title"><%= event.title %></h3>
+          <p class="event-card__meta">
+            <time datetime="<%= event.time %>"><%= event.formattedTime %></time>
+            <span><data value="<%= event.price %>"><%= event.price %> €</data> par personne</span>
+          </p>
+          <a class="button event-card__link" href="/evenements/<%= event.slug %>">
+            Voir le détail<span class="visually-hidden"> de <%= event.title %></span>
+          </a>
+        </article>
+      <% }) %>
     </div>
   </div>
 </section>

@@ -1,0 +1,33 @@
+<article class="event-detail section">
+  <div class="event-detail__container container">
+    <a class="event-detail__back" href="/#programme">← Retour au programme</a>
+    <div class="event-detail__card">
+      <div class="event-detail__content">
+        <p class="event-detail__eyebrow">Au programme</p>
+        <h1 class="event-detail__title"><%= event.title %></h1>
+        <dl class="event-detail__information">
+          <div><dt>Date</dt><dd><time datetime="<%= event.date %>"><%= event.formattedDate %></time></dd></div>
+          <div>
+            <dt>Horaires</dt>
+            <dd><time datetime="<%= event.time %>"><%= event.formattedTime %></time> – <time datetime="<%= event.endTime %>"><%= event.formattedEndTime %></time></dd>
+          </div>
+          <div>
+            <dt>Tarif</dt>
+            <dd><data value="<%= event.price %>"><%= event.priceLabel %></data></dd>
+            <% if (event.priceDetails) { %>
+              <dd class="event-detail__price-details"><%= event.priceDetails %></dd>
+            <% } %>
+          </div>
+          <div>
+            <dt>Lieu</dt>
+            <dd class="event-detail__venue">
+              <address><%= venue.name %><br /><%= venue.address %><br /><%= venue.postalCode %> <%= venue.city %></address>
+            </dd>
+          </div>
+        </dl>
+        <p class="event-detail__description"><%= event.description %></p>
+        <a class="button event-detail__cta" href="/#contact">Nous contacter</a>
+      </div>
+    </div>
+  </div>
+</article>

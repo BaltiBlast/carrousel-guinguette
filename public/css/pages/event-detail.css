@@ -1,0 +1,22 @@
+.event-detail {
+  background: radial-gradient(circle at 12% 18%, rgb(199 147 50 / 14%), transparent 25rem), var(--color-background);
+}
+
+.event-detail__container { max-width: 68rem; }
+.event-detail__back { display: inline-block; margin-bottom: var(--space-6); color: var(--color-primary); font-weight: var(--font-weight-semibold); text-decoration: underline; text-underline-offset: 0.25em; }
+.event-detail__card { overflow: hidden; border-radius: var(--radius-lg); background-color: var(--color-surface); box-shadow: var(--shadow-md); }
+.event-detail__content { padding: clamp(var(--space-8), 6vw, var(--space-16)); }
+.event-detail__eyebrow { margin-bottom: var(--space-2); color: var(--color-accent); font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; }
+.event-detail__title { margin-bottom: var(--space-5); font-size: var(--font-size-display); }
+.event-detail__description { margin-bottom: var(--space-8); color: var(--color-text-muted); font-size: var(--font-size-md); }
+.event-detail__information { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-block: var(--space-6) var(--space-8); }
+.event-detail__information > div { min-width: 0; padding: var(--space-5); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-md); background-color: var(--color-background); }
+.event-detail__information dt { color: var(--color-text-muted); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); text-transform: uppercase; }
+.event-detail__information dd { margin-top: var(--space-1); font-family: var(--font-family-heading); font-size: var(--font-size-md); font-weight: var(--font-weight-bold); }
+.event-detail__information .event-detail__price-details { color: var(--color-text-muted); font-family: var(--font-family-body); font-size: var(--font-size-sm); font-weight: var(--font-weight-regular); }
+.event-detail__venue address { font-style: normal; }
+
+@media (max-width: 32rem) {
+  .event-detail__information { grid-template-columns: 1fr; }
+  .event-detail__cta { width: 100%; }
+}

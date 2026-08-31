@@ -1,4 +1,5 @@
 import * as guestbookService from "../livre-d-or/livre-d-or.services.js";
+import * as eventService from "../evenements/evenements.services.js";
 
 export async function getHomePageData() {
   return {
@@ -6,6 +7,7 @@ export async function getHomePageData() {
     description:
       "Découvrez Le Carrousel, une guinguette et un authentique bal monté des années 70 aux Étangs du Longeau, dans la Meuse : événements, bals, concerts et privatisations.",
     currentYear: new Date().getFullYear(),
+    events: eventService.getEvents(),
     guestbookReviews: await guestbookService.getPublishedReviews(6),
   };
 }
