@@ -250,6 +250,8 @@
 
 .review-form {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: var(--space-8);
   padding: clamp(var(--space-6), 6vw, var(--space-12));
   margin-top: var(--space-10);
@@ -257,6 +259,10 @@
   border-radius: var(--radius-lg);
   background-color: var(--color-surface);
   box-shadow: var(--shadow-md);
+}
+
+.review-form > * {
+  min-width: 0;
 }
 
 .review-form__required {
@@ -287,6 +293,7 @@
 
 .review-field {
   display: grid;
+  min-width: 0;
   gap: var(--space-2);
 }
 
@@ -314,6 +321,8 @@
 
 .review-field input,
 .review-field textarea {
+  min-width: 0;
+  max-width: 100%;
   width: 100%;
   padding: var(--space-3) var(--space-4);
   border: var(--border-width) solid var(--color-border);
@@ -444,7 +453,13 @@
   }
 
   .review-form__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .review-field__label-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
   }
 
   .review-field--date {
