@@ -31,6 +31,7 @@
       <div class="admin-field"><label for="event-end">Fin *</label><input id="event-end" name="endsAt" type="datetime-local" value="<%= event.endsAt || '' %>" required /></div>
       <div class="admin-field"><label for="event-price">Tarif par personne *</label><input id="event-price" name="price" type="number" min="0" max="10000" step="0.01" value="<%= event.price ?? '' %>" required /></div>
       <div class="admin-field"><label for="event-price-details">Compris dans le tarif</label><input id="event-price-details" name="priceDetails" type="text" maxlength="500" value="<%= event.priceDetails || '' %>" /></div>
+      <div class="admin-field"><label for="event-capacity">Nombre de places disponibles *</label><input id="event-capacity" name="capacity" type="number" min="1" max="10000" step="1" value="<%= event.capacity ?? 100 %>" required /></div>
       <div class="admin-field admin-event-form__wide">
         <span id="event-description-label">Description *</span>
         <textarea name="descriptionHtml" data-rich-text-input hidden><%= event.descriptionHtml || '' %></textarea>

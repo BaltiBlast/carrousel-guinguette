@@ -34,10 +34,33 @@ class Event extends CoreMapper {
   }
 
   updateEventById(eventId, eventData) {
-    return this.model.findByIdAndUpdate(eventId, eventData, {
+    return this.model.findOneAndUpdate({
+      _id: eventId,
+      $expr: { $lte: [{ $ifNull: ["$reservedSeats", 0] }, eventData.capacity] },
+    }, eventData, {
       returnDocument: "after",
       runValidators: true,
     });
+  }
+
+  reserveSeats(eventId, seatCount) {
+    return this.model.findOneAndUpdate({
+      _id: eventId,
+      $expr: {
+        $lte: [
+          { $add: [{ $ifNull: ["$reservedSeats", 0] }, seatCount] },
+          { $ifNull: ["$capacity", 100] },
+        ],
+      },
+    }, { $inc: { reservedSeats: seatCount } }, { returnDocument: "after" });
+  }
+
+  releaseSeats(eventId, seatCount) {
+    return this.model.findOneAndUpdate(
+      { _id: eventId, reservedSeats: { $gte: seatCount } },
+      { $inc: { reservedSeats: -seatCount } },
+      { returnDocument: "after" },
+    );
   }
 
   deleteEventById(eventId) {

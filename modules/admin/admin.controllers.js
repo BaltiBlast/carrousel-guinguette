@@ -109,6 +109,37 @@ export async function showEvents(req, res, next) {
   } catch (error) { return next(error); }
 }
 
+export async function showReservations(req, res, next) {
+  try {
+    return res.render("admin/reservations", await service.getReservationsAdminPageData(req.adminUser));
+  } catch (error) { return next(error); }
+}
+
+export async function showCheckIn(req, res, next) {
+  try {
+    return res.render("admin/accueil-reservations", await service.getCheckInAdminPageData(req.adminUser, req.query.eventId));
+  } catch (error) { return next(error); }
+}
+
+export async function updateReservationStatus(req, res, next) {
+  try {
+    const reservation = await service.updateReservationStatus(req.params.reservationId, req.body.status);
+    if (!reservation) return res.status(404).send("Réservation introuvable");
+    return res.redirect(303, "/admin/reservations");
+  } catch (error) {
+    if (error instanceof service.EventValidationError) return res.status(409).send(error.message);
+    return next(error);
+  }
+}
+
+export async function updateReservationCheckIn(req, res, next) {
+  try {
+    const reservation = await service.updateReservationCheckIn(req.params.reservationId, req.body);
+    if (!reservation) return res.status(422).send("Pointage invalide");
+    return res.redirect(303, `/admin/reservations/accueil?eventId=${reservation.eventId}`);
+  } catch (error) { return next(error); }
+}
+
 export function showCreateEvent(req, res) {
   return res.render("admin/evenement-form", service.getEventFormPageData(req.adminUser));
 }

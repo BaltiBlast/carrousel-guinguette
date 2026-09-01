@@ -1,4 +1,4 @@
-import { EventMapper } from "../../model/index.mapper.js";
+import { EventMapper, ReservationMapper } from "../../model/index.mapper.js";
 import { plainEventDescriptionToHtml, sanitizeEventDescription } from "./event-description.js";
 
 const EVENT_TIME_ZONE = "Europe/Paris";
@@ -80,6 +80,7 @@ function presentEvent(event) {
     price: event.price,
     priceLabel: `${event.price} € par personne`,
     priceDetails: event.priceDetails,
+    capacity: event.capacity ?? 100,
   };
 }
 
@@ -133,7 +134,7 @@ export async function getEventsPageData() {
   };
 }
 
-export async function getEventPageData(slug) {
+export async function getEventPageData(slug, overrides = {}) {
   const storedEvent = await EventMapper.findEventBySlug(slug);
 
   if (!storedEvent) {
@@ -141,6 +142,9 @@ export async function getEventPageData(slug) {
   }
 
   const event = presentEvent(storedEvent);
+  const reservedSeats = await ReservationMapper.getReservedSeatCount(storedEvent._id);
+  const remainingSeats = Math.max(0, event.capacity - reservedSeats);
+  const reservationState = storedEvent.endsAt < new Date() ? "closed" : remainingSeats === 0 ? "full" : "open";
 
   return {
     title: `${event.title} | Le Carrousel`,
@@ -148,5 +152,11 @@ export async function getEventPageData(slug) {
     currentYear: new Date().getFullYear(),
     event,
     venue,
+    remainingSeats,
+    reservationState,
+    reservationSuccess: false,
+    reservationError: null,
+    formData: {},
+    ...overrides,
   };
 }

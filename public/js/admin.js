@@ -1,5 +1,76 @@
 const filterGroup = document.querySelector("[data-review-filters]");
 
+const reservationFilterGroup = document.querySelector("[data-reservation-filters]");
+
+if (reservationFilterGroup) {
+  const buttons = [...reservationFilterGroup.querySelectorAll("[data-reservation-filter]")];
+  const reservations = [...document.querySelectorAll("[data-reservation-status]")];
+  const events = [...document.querySelectorAll("[data-reservation-event]")];
+  const status = reservationFilterGroup.querySelector("[data-reservation-filter-status]");
+
+  function filterReservations(selectedButton) {
+    const selectedStatus = selectedButton.dataset.reservationFilter;
+    let visibleCount = 0;
+
+    buttons.forEach((button) => button.setAttribute("aria-pressed", String(button === selectedButton)));
+    reservations.forEach((reservation) => {
+      const visible = selectedStatus === "all" || reservation.dataset.reservationStatus === selectedStatus;
+      reservation.hidden = !visible;
+      visibleCount += Number(visible);
+    });
+    events.forEach((event) => {
+      event.hidden = !event.querySelector("[data-reservation-status]:not([hidden])");
+    });
+    status.textContent = `${visibleCount} réservation${visibleCount > 1 ? "s" : ""} affichée${visibleCount > 1 ? "s" : ""}.`;
+  }
+
+  reservationFilterGroup.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-reservation-filter]");
+    if (button) filterReservations(button);
+  });
+
+  const targetedEvent = window.location.hash ? document.querySelector(window.location.hash) : null;
+  if (targetedEvent?.matches("[data-reservation-event]")) targetedEvent.open = true;
+}
+
+const checkIn = document.querySelector("[data-checkin]");
+
+if (checkIn) {
+  const entries = [...checkIn.querySelectorAll("[data-checkin-entry]")];
+  const search = checkIn.querySelector("[data-checkin-search]");
+  const searchStatus = checkIn.querySelector("[data-checkin-search-status]");
+  const empty = checkIn.querySelector("[data-checkin-empty]");
+  const present = checkIn.querySelector("[data-checkin-present]");
+  const remaining = checkIn.querySelector("[data-checkin-remaining]");
+  const expected = Number(checkIn.dataset.expectedAttendees);
+
+  function updateCheckInTotals() {
+    const presentCount = entries.reduce((total, entry) => {
+      if (!entry.classList.contains("is-checked-in")) return total;
+      return total + Number(entry.querySelector("[data-checkin-count]").value);
+    }, 0);
+    present.textContent = presentCount;
+    remaining.textContent = Math.max(0, expected - presentCount);
+  }
+
+  checkIn.addEventListener("input", (event) => {
+    if (event.target.matches("[data-checkin-count]")) updateCheckInTotals();
+  });
+
+  search.addEventListener("input", () => {
+    const query = search.value.trim().toLocaleLowerCase("fr").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    let visibleCount = 0;
+    entries.forEach((entry) => {
+      const searchableValue = entry.dataset.checkinSearchValue.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const visible = searchableValue.includes(query);
+      entry.hidden = !visible;
+      visibleCount += Number(visible);
+    });
+    empty.hidden = visibleCount !== 0;
+    searchStatus.textContent = `${visibleCount} réservation${visibleCount > 1 ? "s" : ""} trouvée${visibleCount > 1 ? "s" : ""}.`;
+  });
+}
+
 const richTextEditor = document.querySelector("[data-rich-text-editor]");
 let eventDescriptionEditor = null;
 

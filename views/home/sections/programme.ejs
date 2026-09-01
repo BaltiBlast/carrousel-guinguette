@@ -18,9 +18,10 @@
             </span>
             <data value="<%= event.price %>"><%= event.priceLabel %></data>
           </p>
-          <a class="button event-card__link" href="/evenements/<%= event.slug %>">
-            Voir le détail<span class="visually-hidden"> de <%= event.title %></span>
-          </a>
+          <div class="event-card__actions">
+            <a class="button event-card__link" href="/evenements/<%= event.slug %>#reservation">Réserver<span class="visually-hidden"> pour <%= event.title %></span></a>
+            <a class="event-card__detail-link" href="/evenements/<%= event.slug %>">Voir le détail<span class="visually-hidden"> de <%= event.title %></span></a>
+          </div>
         </article>
       <% }) %>
     </div>

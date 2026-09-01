@@ -25,9 +25,41 @@
             </dd>
           </div>
         </dl>
+        <% if (reservationState === 'open') { %>
+          <a class="button event-detail__cta" href="#reservation">Réserver des places</a>
+        <% } else { %>
+          <p class="event-detail__reservation-status"><%= reservationState === 'full' ? 'Toutes les places assises sont réservées. L’événement reste accessible sans réservation.' : 'Les réservations sont fermées.' %></p>
+        <% } %>
         <div class="event-detail__description"><%- event.descriptionHtml %></div>
-        <a class="button event-detail__cta" href="/#contact">Nous contacter</a>
       </div>
     </div>
+
+    <section class="event-reservation" id="reservation" aria-labelledby="reservation-title">
+      <div class="event-reservation__introduction">
+        <p class="event-detail__eyebrow">Votre venue</p>
+        <h2 id="reservation-title">Réserver pour <%= event.title %></h2>
+        <p><%= event.formattedDate %> à <%= event.formattedTime %>. Votre demande sera confirmée par l’équipe du Carrousel.</p>
+      </div>
+
+      <% if (reservationSuccess) { %>
+        <div class="event-reservation__notice event-reservation__notice--success" role="status">
+          <h3>Votre demande a bien été envoyée</h3>
+          <p>Nous vous contacterons dès qu’elle aura été traitée. Pensez à vérifier le dossier des courriers indésirables (spams) de votre messagerie pour ne manquer aucune information concernant votre demande.</p>
+        </div>
+      <% } else if (reservationState === 'open') { %>
+        <% if (reservationError) { %><p class="event-reservation__notice event-reservation__notice--error" role="alert"><%= reservationError %></p><% } %>
+        <form class="event-reservation__form" action="/evenements/<%= event.slug %>/reserver" method="post">
+          <div class="event-reservation__field"><label for="reservation-name">Prénom et nom *</label><input id="reservation-name" name="name" type="text" minlength="2" maxlength="100" autocomplete="name" value="<%= formData.name || '' %>" required /></div>
+          <div class="event-reservation__field"><label for="reservation-email">Adresse e-mail *</label><input id="reservation-email" name="email" type="email" maxlength="254" autocomplete="email" value="<%= formData.email || '' %>" required /></div>
+          <div class="event-reservation__field"><label for="reservation-phone">Téléphone *</label><input id="reservation-phone" name="phone" type="tel" minlength="6" maxlength="30" autocomplete="tel" value="<%= formData.phone || '' %>" required /></div>
+          <div class="event-reservation__field"><label for="reservation-seats">Nombre de places *</label><input id="reservation-seats" name="seats" type="number" min="1" max="<%= Math.min(10, remainingSeats) %>" value="<%= formData.seats || 1 %>" required /><small>10 personnes maximum par réservation · <%= remainingSeats %> place<%= remainingSeats > 1 ? 's' : '' %> encore disponible<%= remainingSeats > 1 ? 's' : '' %>.</small></div>
+          <div class="event-reservation__honeypot" aria-hidden="true"><label for="reservation-website">Site internet</label><input id="reservation-website" name="website" type="text" tabindex="-1" autocomplete="off" /></div>
+          <label class="event-reservation__consent"><input name="privacyAccepted" type="checkbox" <%= formData.privacyAccepted ? 'checked' : '' %> required /> <span>J’accepte que mes coordonnées soient utilisées pour traiter cette réservation. *</span></label>
+          <button class="button event-reservation__submit" type="submit">Envoyer ma demande</button>
+        </form>
+      <% } else { %>
+        <p class="event-reservation__notice"><%= reservationState === 'full' ? 'Toutes les places assises sont réservées. L’événement reste accessible sans réservation.' : 'Il n’est plus possible de réserver pour cet événement.' %></p>
+      <% } %>
+    </section>
   </div>
 </article>

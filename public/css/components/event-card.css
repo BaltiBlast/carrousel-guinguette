@@ -69,10 +69,12 @@
   font-size: var(--font-size-sm);
 }
 
-.event-card__link {
+.event-card__actions {
   width: 100%;
   margin-top: var(--space-6);
 }
+.event-card__link { width: 100%; }
+.event-card__detail-link { display: inline-block; margin-top: var(--space-3); color: var(--color-primary); font-weight: var(--font-weight-semibold); text-decoration: underline; text-underline-offset: 0.2em; }
 
 @media (max-width: 38rem) {
   .event-card {

@@ -54,6 +54,19 @@ const eventSchema = new mongoose.Schema(
       maxlength: 500,
       default: null,
     },
+    capacity: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 10000,
+      default: 100,
+    },
+    reservedSeats: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
   },
   {
     timestamps: true,

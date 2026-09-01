@@ -42,9 +42,10 @@
                           <p class="event-list-item__details"><%= event.priceDetails %></p>
                         <% } %>
                       </div>
-                      <a class="button button--outline event-list-item__link" href="/evenements/<%= event.slug %>">
-                        Voir le détail<span class="visually-hidden"> de <%= event.title %></span>
-                      </a>
+                      <div class="event-list-item__actions">
+                        <a class="button button--outline event-list-item__link" href="/evenements/<%= event.slug %>">Voir le détail<span class="visually-hidden"> de <%= event.title %></span></a>
+                        <a class="button event-list-item__link" href="/evenements/<%= event.slug %>#reservation">Réserver<span class="visually-hidden"> pour <%= event.title %></span></a>
+                      </div>
                     </article>
                   <% }) %>
                 </div>

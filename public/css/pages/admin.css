@@ -619,6 +619,85 @@
 .admin-rich-text[aria-invalid="true"].ql-container { border-color: var(--color-accent); }
 .admin-rich-text__error { color: var(--color-accent); }
 
+/* Reservation integration */
+.admin-reservation-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-8); }
+.admin-reservation-stats article { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-5); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-sm); }
+.admin-reservation-stats span { color: var(--color-text-muted); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
+.admin-reservation-stats strong { color: var(--color-primary); font-family: var(--font-family-heading); font-size: var(--font-size-2xl); }
+.admin-reservation-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); margin-top: var(--space-8); }
+.admin-reservation-toolbar > p { color: var(--color-text-muted); font-size: var(--font-size-sm); }
+.admin-reservation-events { display: grid; gap: var(--space-8); margin-top: var(--space-6); }
+.admin-reservation-event { scroll-margin-top: var(--space-6); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); overflow: hidden; }
+.admin-reservation-event[hidden],
+.admin-reservation[hidden] { display: none; }
+.admin-reservation-event__summary { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--space-5); padding: var(--space-6); cursor: pointer; list-style: none; }
+.admin-reservation-event__summary::-webkit-details-marker { display: none; }
+.admin-reservation-event__summary::after { content: "+"; display: grid; width: 2.5rem; height: 2.5rem; grid-column: 3; grid-row: 1; place-items: center; border-radius: 50%; color: var(--color-primary); background: var(--color-primary-light); font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); }
+.admin-reservation-event[open] > .admin-reservation-event__summary::after { content: "−"; }
+.admin-reservation-event__summary h2 { font-size: var(--font-size-xl); }
+.admin-reservation-event__summary-counts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2) var(--space-4); color: var(--color-text-muted); font-size: var(--font-size-sm); }
+.admin-reservation-event__summary-counts strong { color: var(--color-text); }
+.admin-reservation-event__body { padding: 0 var(--space-6) var(--space-6); border-top: var(--border-width) solid var(--color-border); }
+.admin-reservation-event__links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-3); padding-top: var(--space-5); }
+.admin-reservation-capacity { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-5); }
+.admin-reservation-capacity > div { padding: var(--space-4); border-radius: var(--radius-sm); background: var(--color-background); }
+.admin-reservation-capacity dt,
+.admin-reservation__details dt { color: var(--color-text-muted); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); text-transform: uppercase; }
+.admin-reservation-capacity dd { margin-top: var(--space-1); font-family: var(--font-family-heading); font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); }
+.admin-reservation-list { display: grid; gap: var(--space-4); margin-top: var(--space-5); }
+.admin-reservation { min-width: 0; padding: var(--space-5); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-md); background: var(--color-white); }
+.admin-reservation__header { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
+.admin-reservation__header h3 { font-size: var(--font-size-md); }
+.admin-reservation__header p { margin-top: var(--space-1); color: var(--color-text-muted); font-size: var(--font-size-sm); }
+.admin-reservation__avatar { display: grid; width: 2.75rem; height: 2.75rem; place-items: center; border-radius: 50%; color: var(--color-white); background: var(--color-primary); font-weight: var(--font-weight-bold); }
+.admin-reservation__badge { padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); }
+.admin-reservation__badge--pending { color: #6d4b0d; background: rgb(199 147 50 / 18%); }
+.admin-reservation__badge--accepted { color: var(--color-primary-dark); background: var(--color-primary-light); }
+.admin-reservation__badge--rejected { color: var(--color-accent); background: rgb(158 32 39 / 10%); }
+.admin-reservation__details { display: grid; grid-template-columns: 7rem repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-5); }
+.admin-reservation__details > div { min-width: 0; }
+.admin-reservation__details dd { margin-top: var(--space-1); overflow-wrap: anywhere; }
+.admin-reservation__details a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 0.2em; }
+.admin-reservation__reason { padding: var(--space-4); margin-top: var(--space-4); border-radius: var(--radius-sm); background: var(--color-background); }
+.admin-reservation__reason { color: var(--color-accent); background: rgb(158 32 39 / 6%); }
+.admin-reservation__reason p { margin-top: var(--space-1); color: var(--color-text-muted); }
+.admin-reservation__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
+.admin-reservation__actions .button { min-height: 2.5rem; padding: var(--space-2) var(--space-4); font-size: var(--font-size-sm); }
+.admin-reservation__reject { border-color: var(--color-accent); color: var(--color-accent); }
+.admin-reservation-dialog { width: min(calc(100% - (2 * var(--container-padding))), 32rem); padding: 0; border: 0; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-lg); }
+.admin-reservation-dialog::backdrop { background: rgb(0 35 19 / 55%); }
+.admin-reservation-dialog form { position: relative; display: grid; gap: var(--space-5); padding: var(--space-8); }
+.admin-reservation-dialog__close { position: absolute; top: var(--space-3); right: var(--space-3); width: 2.5rem; height: 2.5rem; padding: 0; border: 0; border-radius: 50%; color: var(--color-text-muted); background: transparent; font-size: var(--font-size-xl); cursor: pointer; }
+.admin-reservation-dialog__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.admin-field select { width: 100%; min-height: 3.25rem; padding: var(--space-3) var(--space-4); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-sm); color: var(--color-text); background: var(--color-white); }
+
+/* Daily reservation check-in */
+.admin-checkin-empty { padding: var(--space-8); margin-top: var(--space-8); border: var(--border-width) dashed var(--color-border); border-radius: var(--radius-md); color: var(--color-text-muted); background: var(--color-surface); text-align: center; }
+.admin-checkin { margin-top: var(--space-8); }
+.admin-checkin__event { display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); padding: var(--space-6); border-radius: var(--radius-lg); color: var(--color-white); background: var(--color-primary); }
+.admin-checkin__event .admin-content__eyebrow,
+.admin-checkin__event p { color: rgb(255 255 255 / 78%); }
+.admin-checkin__event h2 { font-size: var(--font-size-xl); }
+.admin-checkin__event .button { border-color: rgb(255 255 255 / 60%); color: var(--color-white); }
+.admin-checkin__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-5); }
+.admin-checkin__stats > div { padding: var(--space-5); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); text-align: center; }
+.admin-checkin__stats dt { color: var(--color-text-muted); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
+.admin-checkin__stats dd { margin-top: var(--space-1); color: var(--color-primary); font-family: var(--font-family-heading); font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); }
+.admin-checkin__search { position: sticky; z-index: 1; top: 0; padding-block: var(--space-5); margin-top: var(--space-4); background: #f3f4ef; }
+.admin-checkin__search p { color: var(--color-text-muted); font-size: var(--font-size-sm); }
+.admin-checkin__list { display: grid; gap: var(--space-4); }
+.admin-checkin-entry { padding: var(--space-5); border: 0.125rem solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); transition: border-color 160ms ease, opacity 160ms ease; }
+.admin-checkin-entry[hidden] { display: none; }
+.admin-checkin-entry.is-checked-in { border-color: var(--color-primary); background: var(--color-primary-light); }
+.admin-checkin-entry__identity { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-3); }
+.admin-checkin-entry__identity h3 { font-size: var(--font-size-lg); }
+.admin-checkin-entry__identity p { margin-top: var(--space-1); color: var(--color-text-muted); overflow-wrap: anywhere; }
+.admin-checkin-entry__controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--space-5); margin-top: var(--space-5); }
+.admin-checkin-entry__controls label { display: flex; align-items: center; gap: var(--space-3); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
+.admin-checkin-entry__controls input { width: 4.5rem; min-height: 3rem; padding: var(--space-2); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-sm); font: inherit; text-align: center; }
+.admin-checkin-entry__controls small { color: var(--color-text-muted); font-weight: var(--font-weight-regular); }
+.admin-checkin__empty { padding: var(--space-6); color: var(--color-text-muted); text-align: center; }
+
 @media (max-width: 56rem) {
   .admin-shell {
     grid-template-columns: 1fr;
@@ -671,6 +750,21 @@
     width: 100%;
   }
 
+  .admin-reservation-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-reservation-toolbar { align-items: stretch; flex-direction: column; }
+  .admin-reservation-event__summary { grid-template-columns: minmax(0, 1fr) auto; }
+  .admin-reservation-event__summary-counts { grid-column: 1 / -1; justify-content: flex-start; }
+  .admin-reservation-event__summary::after { grid-column: 2; }
+  .admin-reservation-event__links .button { width: 100%; }
+  .admin-reservation-capacity { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-reservation__header { grid-template-columns: auto minmax(0, 1fr); }
+  .admin-reservation__badge { grid-column: 1 / -1; justify-self: start; }
+  .admin-reservation__details { grid-template-columns: 1fr; }
+  .admin-checkin__event { align-items: stretch; flex-direction: column; }
+  .admin-checkin__event .button { width: 100%; }
+  .admin-checkin-entry__controls { grid-template-columns: 1fr; }
+  .admin-checkin-entry__controls .button { width: 100%; }
+
   .admin-review__actions form {
     width: 100%;
   }
@@ -695,4 +789,19 @@
   .admin-event-form { padding: var(--space-4); }
   .admin-event-assistant,
   .admin-event-suggestion { padding: var(--space-4); }
+  .admin-reservation-stats { grid-template-columns: 1fr; }
+  .admin-reservation-event,
+  .admin-reservation,
+  .admin-reservation-dialog form { padding: var(--space-4); }
+  .admin-reservation-event { padding: 0; }
+  .admin-reservation-event__summary { padding: var(--space-4); }
+  .admin-reservation-event__body { padding: 0 var(--space-4) var(--space-4); }
+  .admin-reservation-capacity { grid-template-columns: 1fr; }
+  .admin-reservation__actions .button,
+  .admin-reservation-dialog__actions .button { width: 100%; }
+  .admin-checkin__stats { grid-template-columns: 1fr; }
+  .admin-checkin__event,
+  .admin-checkin-entry { padding: var(--space-4); }
+  .admin-checkin-entry__controls label { display: grid; grid-template-columns: 1fr auto; }
+  .admin-checkin-entry__controls small { grid-column: 1 / -1; }
 }

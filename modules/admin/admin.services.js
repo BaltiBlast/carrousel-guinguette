@@ -1,7 +1,8 @@
 import { createHash, randomBytes } from "node:crypto";
 import { Resend } from "resend";
-import { EventMapper, MagicLinkTokenMapper, ReviewMapper, SessionMapper, UserMapper } from "../../model/index.mapper.js";
+import { EventMapper, MagicLinkTokenMapper, ReservationMapper, ReviewMapper, SessionMapper, UserMapper } from "../../model/index.mapper.js";
 import { eventDescriptionToText, plainEventDescriptionToHtml, sanitizeEventDescription } from "../evenements/event-description.js";
+const reservationStatusLabels = { pending: "En attente", accepted: "Acceptée", rejected: "Refusée" };
 
 const LOGIN_REQUEST_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_REQUEST_LIMIT = 5;
@@ -328,6 +329,7 @@ export async function getDashboardPageData(user, actionMessage = null) {
     pageClass: "admin-page",
     reviews,
     counts,
+    reservationPendingCount: await ReservationMapper.countReservationsByStatus("pending"),
     user,
     actionMessage,
   };
@@ -387,6 +389,7 @@ function normalizeEventInput(input) {
     endsAt: parseDateTimeLocal(input.endsAt),
     price: Number(input.price),
     priceDetails: typeof input.priceDetails === "string" ? input.priceDetails.trim() || null : null,
+    capacity: Number(input.capacity),
   };
   if (event.title.length < 3 || event.title.length > 150) throw new EventValidationError("Le titre doit contenir entre 3 et 150 caractères.");
   if (event.description.length < 20 || event.description.length > 5000) throw new EventValidationError("La description doit contenir entre 20 et 5 000 caractères.");
@@ -394,6 +397,7 @@ function normalizeEventInput(input) {
   if (event.endsAt <= event.startsAt) throw new EventValidationError("La fin doit être postérieure au début de l’événement.");
   if (!Number.isFinite(event.price) || event.price < 0 || event.price > 10000) throw new EventValidationError("Le tarif saisi n’est pas valide.");
   if (event.priceDetails && event.priceDetails.length > 500) throw new EventValidationError("La précision tarifaire ne peut pas dépasser 500 caractères.");
+  if (!Number.isInteger(event.capacity) || event.capacity < 1 || event.capacity > 10000) throw new EventValidationError("La capacité doit être comprise entre 1 et 10 000 places.");
   return event;
 }
 
@@ -403,16 +407,22 @@ function presentAdminEvent(event) {
     descriptionHtml: event.descriptionHtml || plainEventDescriptionToHtml(event.description),
     startsAt: formatDateTimeLocal(event.startsAt), endsAt: formatDateTimeLocal(event.endsAt),
     formattedStart: formatEventDate(event.startsAt), formattedEnd: formatEventDate(event.endsAt),
-    price: event.price, priceDetails: event.priceDetails || "",
+    price: event.price, priceDetails: event.priceDetails || "", capacity: event.capacity ?? 100,
+    reservationCount: 0,
   };
 }
 
 function getAdminBaseData(user) {
-  return { layout: "layouts/admin", pageClass: "admin-page", user };
+  return { layout: "layouts/admin", pageClass: "admin-page", user, reservationPendingCount: null };
 }
 
 export async function getEventsAdminPageData(user, actionMessage = null) {
-  const events = (await EventMapper.findAllEvents()).map(presentAdminEvent);
+  const storedEvents = await EventMapper.findAllEvents();
+  const reservations = await ReservationMapper.findAllReservations();
+  const events = storedEvents.map((event) => ({
+    ...presentAdminEvent(event),
+    reservationCount: reservations.filter(({ eventId }) => eventId.toString() === event._id.toString()).length,
+  }));
   const now = new Date();
   return {
     ...getAdminBaseData(user), title: "Événements | Administration du Carrousel",
@@ -420,6 +430,118 @@ export async function getEventsAdminPageData(user, actionMessage = null) {
     upcomingEvents: events.filter((event) => new Date(event.endsAt) >= now),
     pastEvents: events.filter((event) => new Date(event.endsAt) < now).reverse(),
   };
+}
+
+export async function getReservationsAdminPageData(user) {
+  const storedReservations = await ReservationMapper.findAllReservations();
+  const events = (await EventMapper.findAllEvents())
+    .filter((event) => storedReservations.some(({ eventId }) => eventId.toString() === event._id.toString()))
+    .map((event) => {
+      const presentedEvent = presentAdminEvent(event);
+      const reservations = storedReservations.filter(({ eventId }) => eventId.toString() === event._id.toString()).map((reservation) => ({
+        ...reservation,
+        id: reservation._id.toString(),
+        requestedAt: formatEventDate(reservation.createdAt),
+        initials: reservation.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase(),
+        statusLabel: reservationStatusLabels[reservation.status],
+      }));
+      const confirmedSeats = reservations.filter(({ status }) => status === "accepted").reduce((total, { seats }) => total + seats, 0);
+      const pendingSeats = reservations.filter(({ status }) => status === "pending").reduce((total, { seats }) => total + seats, 0);
+
+      return {
+        ...presentedEvent,
+        capacity: event.capacity ?? 100,
+        confirmedSeats,
+        pendingSeats,
+        remainingSeats: Math.max(0, (event.capacity ?? 100) - confirmedSeats - pendingSeats),
+        checkInEnabled: reservations.some(({ status }) => status === "accepted"),
+        reservations,
+      };
+    });
+  const reservations = events.flatMap((event) => event.reservations);
+  const countByStatus = (status) => reservations.filter((reservation) => reservation.status === status).length;
+
+  return {
+    ...getAdminBaseData(user),
+    reservationPendingCount: await ReservationMapper.countReservationsByStatus("pending"),
+    title: "Réservations | Administration du Carrousel",
+    description: "Consultez et traitez les demandes de réservation par événement.",
+    events,
+    counts: {
+      total: reservations.length,
+      pending: countByStatus("pending"),
+      accepted: countByStatus("accepted"),
+      rejected: countByStatus("rejected"),
+    },
+  };
+}
+
+export async function getCheckInAdminPageData(user, eventId) {
+  const reservations = await ReservationMapper.findAllReservations();
+  const checkInEntry = /^[a-f\d]{24}$/i.test(eventId || "") ? await EventMapper.findEventById(eventId) : null;
+  let event = null;
+
+  if (checkInEntry) {
+    const storedEvent = checkInEntry;
+
+    if (storedEvent) {
+      const acceptedReservations = reservations
+        .filter(({ eventId }) => eventId.toString() === storedEvent._id.toString())
+        .filter(({ status }) => status === "accepted")
+        .map((reservation) => ({
+          ...reservation,
+          id: reservation._id.toString(),
+          initials: reservation.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase(),
+          attendeeCount: reservation.checkedIn ? reservation.attendeeCount : reservation.seats,
+        }));
+      event = {
+        ...presentAdminEvent(storedEvent),
+        capacity: storedEvent.capacity ?? 100,
+        reservations: acceptedReservations,
+        expectedAttendees: acceptedReservations.reduce((total, reservation) => total + reservation.seats, 0),
+        checkedInAttendees: acceptedReservations
+          .filter(({ checkedIn }) => checkedIn)
+          .reduce((total, reservation) => total + reservation.attendeeCount, 0),
+      };
+    }
+  }
+
+  return {
+    ...getAdminBaseData(user),
+    reservationPendingCount: await ReservationMapper.countReservationsByStatus("pending"),
+    title: "Accueil du jour | Administration du Carrousel",
+    description: "Pointez les participants présents à l’événement du jour.",
+    event,
+  };
+}
+
+export async function updateReservationStatus(reservationId, status) {
+  if (!/^[a-f\d]{24}$/i.test(reservationId) || !["pending", "accepted", "rejected"].includes(status)) return null;
+  const reservation = await ReservationMapper.findReservationById(reservationId);
+  if (!reservation) return null;
+  if (reservation.status === status) return reservation;
+
+  const wasReserved = ["pending", "accepted"].includes(reservation.status);
+  const willBeReserved = ["pending", "accepted"].includes(status);
+
+  if (!wasReserved && willBeReserved) {
+    const event = await EventMapper.reserveSeats(reservation.eventId, reservation.seats);
+    if (!event) throw new EventValidationError("Il ne reste pas assez de places pour réactiver cette réservation.");
+    const updated = await ReservationMapper.updateReservationStatusById(reservationId, reservation.status, status);
+    if (!updated) await EventMapper.releaseSeats(reservation.eventId, reservation.seats);
+    return updated;
+  }
+
+  const updated = await ReservationMapper.updateReservationStatusById(reservationId, reservation.status, status);
+  if (updated && wasReserved && !willBeReserved) await EventMapper.releaseSeats(reservation.eventId, reservation.seats);
+  return updated;
+}
+
+export async function updateReservationCheckIn(reservationId, input) {
+  if (!/^[a-f\d]{24}$/i.test(reservationId)) return null;
+  const attendeeCount = Number(input.attendeeCount);
+  if (!Number.isInteger(attendeeCount) || attendeeCount < 0) return null;
+  return ReservationMapper.updateCheckInById(reservationId, input.checkedIn === "true", attendeeCount);
 }
 
 export function getEventFormPageData(user, event = {}, error = null) {
@@ -450,12 +572,20 @@ export async function getEventForEdition(eventId) {
 
 export async function updateEvent(eventId, input) {
   if (!/^[a-f\d]{24}$/i.test(eventId)) return null;
-  return EventMapper.updateEventById(eventId, normalizeEventInput(input));
+  const event = normalizeEventInput(input);
+  const updatedEvent = await EventMapper.updateEventById(eventId, event);
+  if (updatedEvent) return updatedEvent;
+  if (await EventMapper.findEventById(eventId)) {
+    throw new EventValidationError("La capacité ne peut pas être inférieure au nombre de places déjà réservées.");
+  }
+  return null;
 }
 
 export async function deleteEvent(eventId) {
   if (!/^[a-f\d]{24}$/i.test(eventId)) return null;
-  return EventMapper.deleteEventById(eventId);
+  const event = await EventMapper.deleteEventById(eventId);
+  if (event) await ReservationMapper.deleteReservationsByEventId(eventId);
+  return event;
 }
 
 function getGeminiConfiguration() {

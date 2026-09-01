@@ -5,6 +5,7 @@
     <p class="admin-event__price"><%= event.price %> € par personne<% if (event.priceDetails) { %> · <%= event.priceDetails %><% } %></p>
   </div>
   <div class="admin-event__actions">
+    <% if (event.reservationCount) { %><a class="button button--outline" href="/admin/reservations#reservations-<%= event.slug %>">Réservations (<%= event.reservationCount %>)</a><% } %>
     <a class="button button--outline" href="/evenements/<%= event.slug %>" target="_blank" rel="noopener noreferrer">Voir</a>
     <a class="button" href="/admin/evenements/<%= event.id %>/modifier">Modifier</a>
     <form action="/admin/evenements/<%= event.id %>/supprimer" method="post" data-confirm="Supprimer définitivement cet événement ?">

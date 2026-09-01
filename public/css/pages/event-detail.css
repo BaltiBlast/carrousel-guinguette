@@ -8,7 +8,7 @@
 .event-detail__content { padding: clamp(var(--space-8), 6vw, var(--space-16)); }
 .event-detail__eyebrow { margin-bottom: var(--space-2); color: var(--color-accent); font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; }
 .event-detail__title { margin-bottom: var(--space-5); font-size: var(--font-size-display); }
-.event-detail__description { margin-bottom: var(--space-8); color: var(--color-text-muted); font-size: var(--font-size-md); }
+.event-detail__description { margin-top: var(--space-8); color: var(--color-text-muted); font-size: var(--font-size-md); }
 .event-detail__description > * + * { margin-top: var(--space-4); }
 .event-detail__description h2,
 .event-detail__description h3 { color: var(--color-text); }
@@ -27,6 +27,33 @@
 .event-detail__information dd { margin-top: var(--space-1); font-family: var(--font-family-heading); font-size: var(--font-size-md); font-weight: var(--font-weight-bold); }
 .event-detail__information .event-detail__price-details { color: var(--color-text-muted); font-family: var(--font-family-body); font-size: var(--font-size-sm); font-weight: var(--font-weight-regular); }
 .event-detail__venue address { font-style: normal; }
+.event-detail__reservation-status { padding: var(--space-4); border-radius: var(--radius-sm); color: var(--color-accent); background: rgb(158 32 39 / 8%); font-weight: var(--font-weight-semibold); }
+.event-reservation { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: clamp(var(--space-8), 6vw, var(--space-16)); padding: clamp(var(--space-8), 6vw, var(--space-16)); margin-top: var(--space-8); scroll-margin-top: var(--space-6); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-md); }
+.event-reservation__introduction h2 { font-size: var(--font-size-2xl); }
+.event-reservation__introduction > p:last-child { margin-top: var(--space-4); color: var(--color-text-muted); }
+.event-reservation__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+.event-reservation__field { display: grid; align-content: start; gap: var(--space-2); }
+.event-reservation__field label { font-weight: var(--font-weight-semibold); }
+.event-reservation__field input { width: 100%; min-height: 3.25rem; padding: var(--space-3) var(--space-4); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-sm); color: var(--color-text); background: var(--color-white); font: inherit; }
+.event-reservation__field input:focus { border-color: var(--color-primary); }
+.event-reservation__field small { color: var(--color-text-muted); }
+.event-reservation__consent { display: flex; grid-column: 1 / -1; align-items: flex-start; gap: var(--space-3); color: var(--color-text-muted); }
+.event-reservation__consent input { width: 1.125rem; height: 1.125rem; margin-top: 0.2rem; flex: none; accent-color: var(--color-primary); }
+.event-reservation__submit { grid-column: 1 / -1; justify-self: start; }
+.event-reservation__notice { grid-column: 2; padding: var(--space-5); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); }
+.event-reservation__notice h3 { margin-bottom: var(--space-2); }
+.event-reservation__notice--success { border-color: var(--color-primary); color: var(--color-primary-dark); background: var(--color-primary-light); }
+.event-reservation__notice--error { border-color: var(--color-accent); color: var(--color-accent); background: rgb(158 32 39 / 6%); }
+.event-reservation__honeypot { position: absolute; left: -10000px; }
+
+@media (max-width: 48rem) {
+  .event-reservation { grid-template-columns: 1fr; }
+  .event-reservation__notice { grid-column: 1; }
+  .event-reservation__form { grid-template-columns: 1fr; }
+  .event-reservation__consent,
+  .event-reservation__submit { grid-column: 1; }
+  .event-reservation__submit { width: 100%; }
+}
 
 @media (max-width: 32rem) {
   .event-detail__information { grid-template-columns: 1fr; }
