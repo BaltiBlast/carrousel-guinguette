@@ -55,6 +55,14 @@ class Event extends CoreMapper {
     }, { $inc: { reservedSeats: seatCount } }, { returnDocument: "after" });
   }
 
+  reserveSeatsWithOverflow(eventId, seatCount) {
+    return this.model.findByIdAndUpdate(
+      eventId,
+      { $inc: { reservedSeats: seatCount } },
+      { returnDocument: "after", runValidators: true },
+    );
+  }
+
   releaseSeats(eventId, seatCount) {
     return this.model.findOneAndUpdate(
       { _id: eventId, reservedSeats: { $gte: seatCount } },

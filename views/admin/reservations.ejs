@@ -4,27 +4,29 @@
   <main class="admin-content">
     <div class="admin-content__heading">
       <div>
-        <p class="admin-content__eyebrow">Accueil des visiteurs</p>
+        <p class="admin-content__eyebrow">Gestion des demandes</p>
         <h1>Réservations</h1>
-        <p>Consultez les demandes et retrouvez les participants de chaque événement.</p>
+        <p>Traitez les nouvelles demandes, puis retrouvez les réservations déjà traitées.</p>
       </div>
     </div>
 
-    <section class="admin-reservation-stats" aria-label="Résumé des réservations">
-      <article><span>À traiter</span><strong><%= counts.pending %></strong></article>
-      <article><span>Acceptées</span><strong><%= counts.accepted %></strong></article>
-      <article><span>Refusées</span><strong><%= counts.rejected %></strong></article>
-      <article><span>Total</span><strong><%= counts.total %></strong></article>
+    <section class="admin-reservation-priority" aria-labelledby="reservation-priority-title">
+      <div>
+        <p class="admin-content__eyebrow">À faire maintenant</p>
+        <h2 id="reservation-priority-title">
+          <% if (counts.pending) { %><%= counts.pending %> demande<%= counts.pending > 1 ? 's' : '' %> à traiter<% } else { %>Tout est à jour<% } %>
+        </h2>
+        <p><%= counts.pending ? 'Commencez par la demande la plus ancienne.' : 'Aucune demande n’attend votre réponse.' %></p>
+      </div>
     </section>
 
     <div class="admin-reservation-toolbar" data-reservation-filters>
-      <div class="admin-filters" aria-label="Filtrer les réservations">
-        <button type="button" data-reservation-filter="all" aria-pressed="true">Toutes</button>
-        <button type="button" data-reservation-filter="pending" aria-pressed="false">À traiter</button>
-        <button type="button" data-reservation-filter="accepted" aria-pressed="false">Acceptées</button>
-        <button type="button" data-reservation-filter="rejected" aria-pressed="false">Refusées</button>
+      <div class="admin-filters admin-reservation-tabs" aria-label="Afficher les réservations">
+        <button type="button" data-reservation-filter="pending" aria-pressed="true">À traiter <span><%= counts.pending %></span></button>
+        <button type="button" data-reservation-filter="accepted" aria-pressed="false">Confirmées <span><%= counts.accepted %></span></button>
+        <button type="button" data-reservation-filter="rejected" aria-pressed="false">Refusées <span><%= counts.rejected %></span></button>
       </div>
-      <p data-reservation-filter-status role="status"><%= counts.total %> réservations affichées.</p>
+      <p data-reservation-filter-status role="status"><%= counts.pending %> demande<%= counts.pending > 1 ? 's' : '' %> à traiter.</p>
     </div>
 
     <div class="admin-reservation-events">
@@ -37,9 +39,7 @@
               <h2><%= event.title %></h2>
             </div>
             <div class="admin-reservation-event__summary-counts">
-              <span><strong><%= event.reservations.length %></strong> réservations</span>
               <span><strong><%= event.reservations.filter(({ status }) => status === 'pending').length %></strong> à traiter</span>
-              <span><strong><%= event.remainingSeats %></strong> places restantes</span>
             </div>
           </summary>
           <div class="admin-reservation-event__body">
@@ -47,33 +47,36 @@
               <a class="button" href="/admin/reservations/accueil?eventId=<%= event.id %>">Faire l’accueil</a>
               <a class="button button--outline" href="/evenements/<%= event.slug %>" target="_blank" rel="noopener noreferrer">Voir l’événement</a>
             </div>
-            <dl class="admin-reservation-capacity">
-              <div><dt>Capacité</dt><dd><%= event.capacity %></dd></div>
-              <div><dt>Confirmées</dt><dd><%= event.confirmedSeats %></dd></div>
-              <div><dt>Demandées</dt><dd><%= event.pendingSeats %></dd></div>
-              <div><dt>Restantes</dt><dd><%= event.remainingSeats %></dd></div>
-            </dl>
+            <p class="admin-reservation-event__capacity"><strong><%= event.remainingSeats %></strong> places encore disponibles sur <%= event.capacity %>.</p>
+            <% if (event.overCapacity) { %>
+              <p class="admin-reservation-event__overflow" role="status"><strong><%= event.overCapacity %> personne<%= event.overCapacity > 1 ? 's' : '' %> en surplus</strong> par rapport à la capacité prévue.</p>
+            <% } %>
 
             <div class="admin-reservation-list">
             <% event.reservations.forEach((reservation) => { %>
               <article class="admin-reservation" data-reservation-status="<%= reservation.status %>">
                 <header class="admin-reservation__header">
-                  <span class="admin-reservation__avatar" aria-hidden="true"><%= reservation.initials %></span>
-                  <div><h3><%= reservation.name %></h3><p>Demande du <%= reservation.requestedAt %></p></div>
-                  <span class="admin-reservation__badge admin-reservation__badge--<%= reservation.status %>"><%= reservation.statusLabel %></span>
+                  <div><h3><%= reservation.name %></h3><p>Demande reçue le <%= reservation.requestedAt %></p></div>
+                  <% if (reservation.status !== 'pending') { %><span class="admin-reservation__badge admin-reservation__badge--<%= reservation.status %>"><%= reservation.statusLabel %></span><% } %>
                 </header>
                 <dl class="admin-reservation__details">
-                  <div><dt>Places</dt><dd><strong><%= reservation.seats %></strong></dd></div>
+                  <div class="admin-reservation__seats"><dt>Personnes</dt><dd><strong><%= reservation.seats %></strong></dd></div>
                   <div><dt>E-mail</dt><dd><a href="mailto:<%= reservation.email %>"><%= reservation.email %></a></dd></div>
                   <div><dt>Téléphone</dt><dd><a href="tel:<%= reservation.phone.replace(/\s/g, '') %>"><%= reservation.phone %></a></dd></div>
                 </dl>
                 <% if (reservation.rejectionReason) { %><div class="admin-reservation__reason"><strong>Motif du refus</strong><p><%= reservation.rejectionReason %></p></div><% } %>
                 <div class="admin-reservation__actions">
                   <% if (reservation.status === 'pending') { %>
-                    <form action="/admin/reservations/<%= reservation.id %>/statut" method="post"><input type="hidden" name="status" value="accepted" /><button class="button" type="submit">Accepter</button></form>
-                    <form action="/admin/reservations/<%= reservation.id %>/statut" method="post"><input type="hidden" name="status" value="rejected" /><button class="button button--outline admin-reservation__reject" type="submit">Refuser</button></form>
+                    <form action="/admin/reservations/<%= reservation.id %>/statut" method="post"><input type="hidden" name="status" value="accepted" /><button class="button" type="submit">Accepter la réservation</button></form>
+                    <form action="/admin/reservations/<%= reservation.id %>/statut" method="post" data-confirm="Refuser la réservation de <%= reservation.name %> ?"><input type="hidden" name="status" value="rejected" /><button class="admin-reservation__text-action" type="submit">Refuser</button></form>
+                  <% } else if (reservation.status === 'rejected' && reservation.projectedOverflow) { %>
+                    <form action="/admin/reservations/<%= reservation.id %>/statut" method="post" data-confirm="Il n’y a plus assez de places. Cette modification créera un surplus de <%= reservation.projectedOverflow %> personne<%= reservation.projectedOverflow > 1 ? 's' : '' %>. Voulez-vous accepter ce surplus ?">
+                      <input type="hidden" name="status" value="pending" />
+                      <input type="hidden" name="allowOverflow" value="true" />
+                      <button class="admin-reservation__text-action" type="submit">Modifier cette décision</button>
+                    </form>
                   <% } else { %>
-                    <form action="/admin/reservations/<%= reservation.id %>/statut" method="post"><input type="hidden" name="status" value="pending" /><button class="button button--outline" type="submit">Repasser en attente</button></form>
+                    <form action="/admin/reservations/<%= reservation.id %>/statut" method="post"><input type="hidden" name="status" value="pending" /><button class="admin-reservation__text-action" type="submit">Modifier cette décision</button></form>
                   <% } %>
                 </div>
               </article>
@@ -82,6 +85,7 @@
           </div>
         </details>
       <% }) %>
+      <p class="admin-reservation-filter-empty" data-reservation-filter-empty hidden>Aucune réservation dans cette rubrique.</p>
     </div>
 
   </main>

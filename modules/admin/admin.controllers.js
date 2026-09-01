@@ -123,7 +123,11 @@ export async function showCheckIn(req, res, next) {
 
 export async function updateReservationStatus(req, res, next) {
   try {
-    const reservation = await service.updateReservationStatus(req.params.reservationId, req.body.status);
+    const reservation = await service.updateReservationStatus(
+      req.params.reservationId,
+      req.body.status,
+      req.body.allowOverflow === "true",
+    );
     if (!reservation) return res.status(404).send("Réservation introuvable");
     return res.redirect(303, "/admin/reservations");
   } catch (error) {

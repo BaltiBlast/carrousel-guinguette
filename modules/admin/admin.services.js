@@ -447,15 +447,23 @@ export async function getReservationsAdminPageData(user) {
       }));
       const confirmedSeats = reservations.filter(({ status }) => status === "accepted").reduce((total, { seats }) => total + seats, 0);
       const pendingSeats = reservations.filter(({ status }) => status === "pending").reduce((total, { seats }) => total + seats, 0);
+      const reservedSeats = confirmedSeats + pendingSeats;
+      const capacity = event.capacity ?? 100;
 
       return {
         ...presentedEvent,
-        capacity: event.capacity ?? 100,
+        capacity,
         confirmedSeats,
         pendingSeats,
-        remainingSeats: Math.max(0, (event.capacity ?? 100) - confirmedSeats - pendingSeats),
+        remainingSeats: Math.max(0, capacity - reservedSeats),
+        overCapacity: Math.max(0, reservedSeats - capacity),
         checkInEnabled: reservations.some(({ status }) => status === "accepted"),
-        reservations,
+        reservations: reservations.map((reservation) => ({
+          ...reservation,
+          projectedOverflow: reservation.status === "rejected"
+            ? Math.max(0, reservedSeats + reservation.seats - capacity)
+            : 0,
+        })),
       };
     });
   const reservations = events.flatMap((event) => event.reservations);
@@ -515,7 +523,7 @@ export async function getCheckInAdminPageData(user, eventId) {
   };
 }
 
-export async function updateReservationStatus(reservationId, status) {
+export async function updateReservationStatus(reservationId, status, allowOverflow = false) {
   if (!/^[a-f\d]{24}$/i.test(reservationId) || !["pending", "accepted", "rejected"].includes(status)) return null;
   const reservation = await ReservationMapper.findReservationById(reservationId);
   if (!reservation) return null;
@@ -525,7 +533,8 @@ export async function updateReservationStatus(reservationId, status) {
   const willBeReserved = ["pending", "accepted"].includes(status);
 
   if (!wasReserved && willBeReserved) {
-    const event = await EventMapper.reserveSeats(reservation.eventId, reservation.seats);
+    let event = await EventMapper.reserveSeats(reservation.eventId, reservation.seats);
+    if (!event && allowOverflow) event = await EventMapper.reserveSeatsWithOverflow(reservation.eventId, reservation.seats);
     if (!event) throw new EventValidationError("Il ne reste pas assez de places pour réactiver cette réservation.");
     const updated = await ReservationMapper.updateReservationStatusById(reservationId, reservation.status, status);
     if (!updated) await EventMapper.releaseSeats(reservation.eventId, reservation.seats);

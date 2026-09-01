@@ -7,6 +7,7 @@ if (reservationFilterGroup) {
   const reservations = [...document.querySelectorAll("[data-reservation-status]")];
   const events = [...document.querySelectorAll("[data-reservation-event]")];
   const status = reservationFilterGroup.querySelector("[data-reservation-filter-status]");
+  const empty = document.querySelector("[data-reservation-filter-empty]");
 
   function filterReservations(selectedButton) {
     const selectedStatus = selectedButton.dataset.reservationFilter;
@@ -21,7 +22,12 @@ if (reservationFilterGroup) {
     events.forEach((event) => {
       event.hidden = !event.querySelector("[data-reservation-status]:not([hidden])");
     });
-    status.textContent = `${visibleCount} réservation${visibleCount > 1 ? "s" : ""} affichée${visibleCount > 1 ? "s" : ""}.`;
+    const firstVisibleEvent = events.find((event) => !event.hidden);
+    if (firstVisibleEvent && !events.some((event) => !event.hidden && event.open)) firstVisibleEvent.open = true;
+    empty.hidden = visibleCount !== 0;
+    const labels = { pending: "à traiter", accepted: "confirmée", rejected: "refusée" };
+    const plural = visibleCount === 1 ? "" : "s";
+    status.textContent = `${visibleCount} réservation${plural} ${labels[selectedStatus]}${plural}.`;
   }
 
   reservationFilterGroup.addEventListener("click", (event) => {
@@ -31,6 +37,7 @@ if (reservationFilterGroup) {
 
   const targetedEvent = window.location.hash ? document.querySelector(window.location.hash) : null;
   if (targetedEvent?.matches("[data-reservation-event]")) targetedEvent.open = true;
+  filterReservations(buttons.find((button) => button.dataset.reservationFilter === "pending"));
 }
 
 const checkIn = document.querySelector("[data-checkin]");
