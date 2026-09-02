@@ -1,6 +1,14 @@
 const menuToggle = document.querySelector(".navbar__toggle");
 const navigation = document.querySelector(".navbar__menu");
 
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js").catch((error) => {
+      console.error("Échec de l’enregistrement du service worker :", error);
+    });
+  });
+}
+
 if (menuToggle && navigation) {
   const closeMenu = () => {
     menuToggle.setAttribute("aria-expanded", "false");
