@@ -30,8 +30,8 @@
         "@type": "LocalBusiness",
         "name": "Le Carrousel",
         "description": "Guinguette, bal monté des années 70 et lieu d’événements aux Étangs du Longeau dans la Meuse.",
-        "email": "lecarrousel54@gmail.com",
-        "telephone": "+33681082064",
+        "email": "<%= contact.email %>",
+        "telephone": "<%= contact.phoneHref %>",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Les Étangs du Longeau",
@@ -45,7 +45,7 @@
   <body>
     <header class="site-header">
       <div class="navbar container">
-        <a class="brand" href="/#accueil" aria-label="Le Carrousel — Accueil">
+        <a class="brand" href="/#accueil" aria-label="Le Carrousel, accueil">
           <span class="brand__ornament" aria-hidden="true">❧</span>
           <span>Le Carrousel</span>
           <span class="brand__ornament" aria-hidden="true">❧</span>
@@ -77,7 +77,7 @@
 
     <footer class="site-footer">
       <div class="site-footer__main container">
-        <a class="brand site-footer__brand" href="/#accueil" aria-label="Le Carrousel — Retour à l’accueil">
+        <a class="brand site-footer__brand" href="/#accueil" aria-label="Le Carrousel, retour à l’accueil">
           <span class="brand__ornament" aria-hidden="true">❧</span>
           <span>Le Carrousel</span>
           <span class="brand__ornament" aria-hidden="true">❧</span>
@@ -94,8 +94,8 @@
         </nav>
 
         <address class="site-footer__contact">
-          <a class="site-footer__phone" href="tel:+33681082064">06 81 08 20 64</a>
-          <a href="mailto:lecarrousel54@gmail.com">lecarrousel54@gmail.com</a>
+          <a class="site-footer__phone" href="tel:<%= contact.phoneHref %>"><%= contact.phoneLabel %></a>
+          <a href="mailto:<%= contact.email %>"><%= contact.email %></a>
         </address>
       </div>
 
