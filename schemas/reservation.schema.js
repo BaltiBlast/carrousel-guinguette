@@ -7,7 +7,7 @@ const reservationSchema = new mongoose.Schema(
     email: { type: String, required: true, trim: true, lowercase: true, maxlength: 254 },
     phone: { type: String, required: true, trim: true, maxlength: 30 },
     seats: { type: Number, required: true, min: 1, max: 10 },
-    status: { type: String, enum: ["pending", "accepted", "rejected"], default: "pending", index: true },
+    status: { type: String, enum: ["pending", "accepted", "rejected", "cancelled"], default: "pending", index: true },
     checkedIn: { type: Boolean, default: false },
     attendeeCount: { type: Number, min: 0, default: 0 },
   },

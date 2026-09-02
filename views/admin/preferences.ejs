@@ -1,0 +1,37 @@
+<%- include("partials/header") %>
+
+<div class="admin-shell">
+  <%- include("partials/sidebar", { activePage: "preferences" }) %>
+
+  <main class="admin-content">
+    <div class="admin-content__heading">
+      <div>
+        <p class="admin-content__eyebrow">Compte administrateur</p>
+        <h1>Préférences</h1>
+        <p>Gérez le comportement de l’administration sur vos différents appareils.</p>
+      </div>
+    </div>
+
+    <section class="admin-preferences" aria-labelledby="notification-preferences-title">
+      <div class="admin-preferences__heading">
+        <p class="admin-content__eyebrow">Alertes</p>
+        <h2 id="notification-preferences-title">Notifications</h2>
+        <p>Recevez une alerte lorsqu’un visiteur dépose un nouvel avis ou effectue une demande de réservation.</p>
+        <p class="admin-preferences__help">
+          Activez les notifications séparément sur chaque appareil où vous souhaitez les recevoir :
+          téléphone, ordinateur ou tablette.
+        </p>
+      </div>
+
+      <div class="admin-push" data-admin-push hidden aria-labelledby="admin-push-device-title">
+        <div>
+          <h3 id="admin-push-device-title">Cet appareil</h3>
+          <p data-admin-push-status aria-live="polite">Vérification de la compatibilité…</p>
+        </div>
+        <button class="button button--outline" type="button" data-admin-push-toggle>
+          Activer les notifications
+        </button>
+      </div>
+    </section>
+  </main>
+</div>

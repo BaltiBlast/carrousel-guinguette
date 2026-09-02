@@ -1,4 +1,5 @@
 import { ReviewMapper } from "../../model/index.mapper.js";
+import { dispatchNotification, NOTIFICATION_TYPES } from "../notifications/notifications.services.js";
 
 const SUBMISSION_WINDOW_MS = 15 * 60 * 1000;
 const SUBMISSION_LIMIT = 5;
@@ -243,6 +244,12 @@ export async function submitReview(input, remoteIp) {
     }
 
     throw error;
+  }
+
+  try {
+    await dispatchNotification(NOTIFICATION_TYPES.REVIEW_CREATED, { review: createdReview });
+  } catch (error) {
+    console.error("Échec de la notification du nouvel avis :", error.message);
   }
 
   return { accepted: true, reviewId: createdReview._id };

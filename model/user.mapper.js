@@ -16,6 +16,10 @@ class User extends CoreMapper {
     return this.model.findOne({ email });
   }
 
+  findActiveAdministrators() {
+    return this.model.find({ role: "admin", isActive: true });
+  }
+
   upsertUserByEmail(email, userData) {
     return this.model.findOneAndUpdate({ email }, userData, {
       returnDocument: "after",

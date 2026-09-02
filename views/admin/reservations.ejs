@@ -25,6 +25,7 @@
         <button type="button" data-reservation-filter="pending" aria-pressed="true">À traiter <span><%= counts.pending %></span></button>
         <button type="button" data-reservation-filter="accepted" aria-pressed="false">Confirmées <span><%= counts.accepted %></span></button>
         <button type="button" data-reservation-filter="rejected" aria-pressed="false">Refusées <span><%= counts.rejected %></span></button>
+        <button type="button" data-reservation-filter="cancelled" aria-pressed="false">Annulées <span><%= counts.cancelled %></span></button>
       </div>
       <p data-reservation-filter-status role="status"><%= counts.pending %> demande<%= counts.pending > 1 ? 's' : '' %> à traiter.</p>
     </div>
@@ -69,6 +70,8 @@
                   <% if (reservation.status === 'pending') { %>
                     <form action="/admin/reservations/<%= reservation.id %>/statut" method="post"><input type="hidden" name="status" value="accepted" /><button class="button" type="submit">Accepter la réservation</button></form>
                     <form action="/admin/reservations/<%= reservation.id %>/statut" method="post" data-confirm="Refuser la réservation de <%= reservation.name %> ?"><input type="hidden" name="status" value="rejected" /><button class="admin-reservation__text-action" type="submit">Refuser</button></form>
+                  <% } else if (reservation.status === 'accepted') { %>
+                    <form action="/admin/reservations/<%= reservation.id %>/statut" method="post" data-confirm="Confirmer l’annulation de la réservation de <%= reservation.name %> ? Un e-mail lui sera envoyé."><input type="hidden" name="status" value="cancelled" /><button class="admin-reservation__text-action" type="submit">Annuler la réservation</button></form>
                   <% } else if (reservation.status === 'rejected' && reservation.projectedOverflow) { %>
                     <form action="/admin/reservations/<%= reservation.id %>/statut" method="post" data-confirm="Il n’y a plus assez de places. Cette modification créera un surplus de <%= reservation.projectedOverflow %> personne<%= reservation.projectedOverflow > 1 ? 's' : '' %>. Voulez-vous accepter ce surplus ?">
                       <input type="hidden" name="status" value="pending" />

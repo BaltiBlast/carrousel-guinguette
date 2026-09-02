@@ -1,8 +1,19 @@
 import { createHash, randomBytes } from "node:crypto";
-import { Resend } from "resend";
 import { EventMapper, MagicLinkTokenMapper, ReservationMapper, ReviewMapper, SessionMapper, UserMapper } from "../../model/index.mapper.js";
 import { eventDescriptionToText, plainEventDescriptionToHtml, sanitizeEventDescription } from "../evenements/event-description.js";
-const reservationStatusLabels = { pending: "En attente", accepted: "Acceptée", rejected: "Refusée" };
+import { sendTransactionalEmail, validateEmailConfiguration } from "../notifications/email.transport.js";
+import { dispatchNotification, NOTIFICATION_TYPES } from "../notifications/notifications.services.js";
+const reservationStatusLabels = { pending: "En attente", accepted: "Acceptée", rejected: "Refusée", cancelled: "Annulée" };
+const reservationStatusTransitions = Object.freeze({
+  pending: new Set(["accepted", "rejected"]),
+  accepted: new Set(["cancelled"]),
+  rejected: new Set(["pending"]),
+  cancelled: new Set(["pending"]),
+});
+
+export function isReservationStatusTransitionAllowed(currentStatus, nextStatus) {
+  return currentStatus === nextStatus || Boolean(reservationStatusTransitions[currentStatus]?.has(nextStatus));
+}
 
 const LOGIN_REQUEST_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_REQUEST_LIMIT = 5;
@@ -78,8 +89,7 @@ function getSessionDurationMilliseconds() {
 }
 
 export function validateConfiguration() {
-  getRequiredEnvironmentVariable("RESEND_API_KEY");
-  getRequiredEnvironmentVariable("RESEND_FROM_EMAIL");
+  validateEmailConfiguration();
   getAdministratorData();
   getAppBaseUrl();
   getPositiveIntegerEnvironmentVariable("MAGIC_LINK_TTL_MINUTES");
@@ -155,21 +165,16 @@ export async function requestMagicLink(email, requestIdentifier) {
   const confirmationUrl = new URL("/admin/connexion/lien", getAppBaseUrl());
   confirmationUrl.searchParams.set("token", token);
 
-  const resend = new Resend(getRequiredEnvironmentVariable("RESEND_API_KEY"));
-  const { error } = await resend.emails.send(
-    {
-      from: getRequiredEnvironmentVariable("RESEND_FROM_EMAIL"),
-      to: [user.email],
+  try {
+    await sendTransactionalEmail({
+      to: user.email,
       subject: "Votre lien de connexion au Carrousel",
       text: `Pour vous connecter à l'administration du Carrousel, ouvrez ce lien : ${confirmationUrl.toString()}\n\nCe lien est personnel, utilisable une seule fois et expire dans ${timeToLive} minutes.`,
       html: `<p>Bonjour ${user.displayName},</p><p>Utilisez le bouton ci-dessous pour vous connecter à l'administration du Carrousel.</p><p><a href="${confirmationUrl.toString()}">Confirmer ma connexion</a></p><p>Ce lien est personnel, utilisable une seule fois et expire dans ${timeToLive} minutes.</p>`,
-    },
-    { idempotencyKey: `magic-link/${tokenHash}` },
-  );
-
-  if (error) {
+    });
+  } catch (error) {
     await MagicLinkTokenMapper.deleteTokensByUserId(user._id);
-    throw new Error(`Resend a refusé l'envoi : ${error.message}`);
+    throw error;
   }
 }
 
@@ -335,6 +340,17 @@ export async function getDashboardPageData(user, actionMessage = null) {
   };
 }
 
+export async function getPreferencesPageData(user) {
+  return {
+    layout: "layouts/admin",
+    title: "Préférences | Administration du Carrousel",
+    description: "Préférences du compte administrateur du Carrousel.",
+    pageClass: "admin-page",
+    reservationPendingCount: await ReservationMapper.countReservationsByStatus("pending"),
+    user,
+  };
+}
+
 export class EventValidationError extends Error {
   constructor(message) {
     super(message);
@@ -480,6 +496,7 @@ export async function getReservationsAdminPageData(user) {
       pending: countByStatus("pending"),
       accepted: countByStatus("accepted"),
       rejected: countByStatus("rejected"),
+      cancelled: countByStatus("cancelled"),
     },
   };
 }
@@ -524,25 +541,49 @@ export async function getCheckInAdminPageData(user, eventId) {
 }
 
 export async function updateReservationStatus(reservationId, status, allowOverflow = false) {
-  if (!/^[a-f\d]{24}$/i.test(reservationId) || !["pending", "accepted", "rejected"].includes(status)) return null;
+  if (!/^[a-f\d]{24}$/i.test(reservationId) || !["pending", "accepted", "rejected", "cancelled"].includes(status)) return null;
   const reservation = await ReservationMapper.findReservationById(reservationId);
   if (!reservation) return null;
   if (reservation.status === status) return reservation;
+  if (!isReservationStatusTransitionAllowed(reservation.status, status)) {
+    throw new EventValidationError(`Le passage du statut « ${reservationStatusLabels[reservation.status]} » au statut « ${reservationStatusLabels[status]} » n’est pas autorisé.`);
+  }
 
   const wasReserved = ["pending", "accepted"].includes(reservation.status);
   const willBeReserved = ["pending", "accepted"].includes(status);
+  let updated;
 
   if (!wasReserved && willBeReserved) {
     let event = await EventMapper.reserveSeats(reservation.eventId, reservation.seats);
     if (!event && allowOverflow) event = await EventMapper.reserveSeatsWithOverflow(reservation.eventId, reservation.seats);
     if (!event) throw new EventValidationError("Il ne reste pas assez de places pour réactiver cette réservation.");
-    const updated = await ReservationMapper.updateReservationStatusById(reservationId, reservation.status, status);
+    updated = await ReservationMapper.updateReservationStatusById(reservationId, reservation.status, status);
     if (!updated) await EventMapper.releaseSeats(reservation.eventId, reservation.seats);
-    return updated;
+  } else {
+    updated = await ReservationMapper.updateReservationStatusById(reservationId, reservation.status, status);
+    if (updated && wasReserved && !willBeReserved) await EventMapper.releaseSeats(reservation.eventId, reservation.seats);
   }
 
-  const updated = await ReservationMapper.updateReservationStatusById(reservationId, reservation.status, status);
-  if (updated && wasReserved && !willBeReserved) await EventMapper.releaseSeats(reservation.eventId, reservation.seats);
+  if (updated && status === "accepted") {
+    try {
+      const event = await EventMapper.findEventById(updated.eventId);
+      if (!event) throw new Error("Événement associé à la réservation introuvable.");
+      await dispatchNotification(NOTIFICATION_TYPES.RESERVATION_ACCEPTED, { reservation: updated, event });
+    } catch (error) {
+      console.error("Échec de l’envoi de la confirmation de réservation :", error.message);
+    }
+  }
+
+  if (updated && reservation.status === "accepted" && status === "cancelled") {
+    try {
+      const event = await EventMapper.findEventById(updated.eventId);
+      if (!event) throw new Error("Événement associé à la réservation introuvable.");
+      await dispatchNotification(NOTIFICATION_TYPES.RESERVATION_CANCELLED, { reservation: updated, event });
+    } catch (error) {
+      console.error("Échec de l’envoi de la confirmation d’annulation :", error.message);
+    }
+  }
+
   return updated;
 }
 

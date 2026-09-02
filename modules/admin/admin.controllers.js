@@ -115,6 +115,14 @@ export async function showReservations(req, res, next) {
   } catch (error) { return next(error); }
 }
 
+export async function showPreferences(req, res, next) {
+  try {
+    return res.render("admin/preferences", await service.getPreferencesPageData(req.adminUser));
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export async function showCheckIn(req, res, next) {
   try {
     return res.render("admin/accueil-reservations", await service.getCheckInAdminPageData(req.adminUser, req.query.eventId));

@@ -1,4 +1,5 @@
 import { EventMapper, ReservationMapper } from "../../model/index.mapper.js";
+import { dispatchNotification, NOTIFICATION_TYPES } from "../notifications/notifications.services.js";
 
 const SUBMISSION_WINDOW_MS = 15 * 60 * 1000;
 const SUBMISSION_LIMIT = 5;
@@ -58,8 +59,10 @@ export async function submitReservation(slug, input, remoteIp) {
     throw new ReservationSubmissionError(remainingSeats ? `Il ne reste que ${remainingSeats} place${remainingSeats > 1 ? "s" : ""}.` : "Cet événement est complet.", 409);
   }
 
+  let createdReservation;
+
   try {
-    return await ReservationMapper.createReservation({
+    createdReservation = await ReservationMapper.createReservation({
       eventId: event._id,
       name: reservation.name,
       email: reservation.email,
@@ -72,4 +75,15 @@ export async function submitReservation(slug, input, remoteIp) {
     if (error?.code === 11000) throw new ReservationSubmissionError("Une réservation existe déjà pour cet événement avec cette adresse e-mail.", 409);
     throw error;
   }
+
+  try {
+    await dispatchNotification(NOTIFICATION_TYPES.RESERVATION_CREATED, {
+      reservation: createdReservation,
+      event,
+    });
+  } catch (error) {
+    console.error("Échec de la notification de la nouvelle réservation :", error.message);
+  }
+
+  return createdReservation;
 }

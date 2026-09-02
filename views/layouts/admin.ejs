@@ -6,7 +6,14 @@
     <meta name="description" content="<%= description %>" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#07572f" />
+    <meta name="application-name" content="Le Carrousel" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Le Carrousel" />
     <title><%= title %></title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,5 +27,6 @@
     <%- body %>
     <script src="/vendor/quill/quill.js"></script>
     <script type="module" src="/js/admin.js"></script>
+    <script type="module" src="/js/admin-notifications.js"></script>
   </body>
 </html>

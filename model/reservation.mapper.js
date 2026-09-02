@@ -30,7 +30,7 @@ class Reservation extends CoreMapper {
   updateReservationStatusById(reservationId, currentStatus, status) {
     return this.model.findOneAndUpdate(
       { _id: reservationId, status: currentStatus },
-      { status, ...(status === "rejected" ? { checkedIn: false, attendeeCount: 0 } : {}) },
+      { status, ...(["rejected", "cancelled"].includes(status) ? { checkedIn: false, attendeeCount: 0 } : {}) },
       { returnDocument: "after", runValidators: true },
     );
   }

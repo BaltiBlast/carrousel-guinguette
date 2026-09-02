@@ -11,6 +11,7 @@ router.post("/connexion/lien", controller.confirmMagicLink);
 router.get("/tableau-de-bord", middleware.requireAuthentication, controller.showDashboard);
 router.get("/evenements", middleware.requireAuthentication, controller.showEvents);
 router.get("/reservations", middleware.requireAuthentication, controller.showReservations);
+router.get("/preferences", middleware.requireAuthentication, controller.showPreferences);
 router.get("/reservations/accueil", middleware.requireAuthentication, controller.showCheckIn);
 router.post("/reservations/:reservationId/statut", middleware.requireAuthentication, controller.updateReservationStatus);
 router.post("/reservations/:reservationId/accueil", middleware.requireAuthentication, controller.updateReservationCheckIn);

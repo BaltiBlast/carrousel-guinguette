@@ -25,7 +25,7 @@ if (reservationFilterGroup) {
     const firstVisibleEvent = events.find((event) => !event.hidden);
     if (firstVisibleEvent && !events.some((event) => !event.hidden && event.open)) firstVisibleEvent.open = true;
     empty.hidden = visibleCount !== 0;
-    const labels = { pending: "à traiter", accepted: "confirmée", rejected: "refusée" };
+    const labels = { pending: "à traiter", accepted: "confirmée", rejected: "refusée", cancelled: "annulée" };
     const plural = visibleCount === 1 ? "" : "s";
     status.textContent = `${visibleCount} réservation${plural} ${labels[selectedStatus]}${plural}.`;
   }

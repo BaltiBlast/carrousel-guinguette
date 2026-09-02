@@ -565,6 +565,64 @@
   background-color: var(--color-accent);
 }
 
+.admin-push {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+  border: var(--border-width) solid rgb(7 87 47 / 24%);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+}
+
+.admin-push[hidden] {
+  display: none;
+}
+
+.admin-push h2 {
+  font-size: var(--font-size-lg);
+}
+
+.admin-push h3 {
+  font-size: var(--font-size-md);
+}
+
+.admin-push p:last-child {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.admin-preferences {
+  padding: var(--space-6);
+  margin-top: var(--space-8);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-preferences__heading {
+  margin-bottom: var(--space-5);
+}
+
+.admin-preferences__heading h2 {
+  font-size: var(--font-size-xl);
+}
+
+.admin-preferences__heading p:last-child {
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.admin-preferences__help {
+  padding: var(--space-3) var(--space-4);
+  border-left: 0.2rem solid var(--color-highlight);
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+}
+
 /* Event management */
 .admin-events { margin-top: var(--space-10); }
 .admin-events__heading { display: flex; align-items: end; justify-content: space-between; gap: var(--space-5); margin-bottom: var(--space-5); }
@@ -654,6 +712,7 @@
 .admin-reservation__badge--pending { color: #6d4b0d; background: rgb(199 147 50 / 18%); }
 .admin-reservation__badge--accepted { color: var(--color-primary-dark); background: var(--color-primary-light); }
 .admin-reservation__badge--rejected { color: var(--color-accent); background: rgb(158 32 39 / 10%); }
+.admin-reservation__badge--cancelled { color: #5f665f; background: rgb(95 102 95 / 12%); }
 .admin-reservation__details { display: grid; grid-template-columns: 6rem repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
 .admin-reservation__details > div { min-width: 0; }
 .admin-reservation__details dd { margin-top: var(--space-1); overflow-wrap: anywhere; }
@@ -762,6 +821,15 @@
   .admin-checkin-entry__controls .button { width: 100%; }
 
   .admin-review__actions form {
+    width: 100%;
+  }
+
+  .admin-push {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-push .button {
     width: 100%;
   }
 
