@@ -35,10 +35,10 @@
         <% if (!event.reservations.length) { %><p class="admin-checkin-empty">Aucune réservation n’a encore été acceptée pour cet événement.</p><% } %>
         <div class="admin-checkin__list">
           <% event.reservations.forEach((reservation) => { %>
-            <article class="admin-checkin-entry <%= reservation.checkedIn ? 'is-checked-in' : '' %>" data-checkin-entry data-checkin-search-value="<%= `${reservation.name} ${reservation.email} ${reservation.phone}`.toLowerCase() %>">
+            <article class="admin-checkin-entry <%= reservation.checkedIn ? 'is-checked-in' : '' %>" data-checkin-entry data-checkin-search-value="<%= `${reservation.name} ${reservation.email || ''} ${reservation.phone || ''}`.toLowerCase() %>">
               <div class="admin-checkin-entry__identity">
                 <span class="admin-reservation__avatar" aria-hidden="true"><%= reservation.initials %></span>
-                <div><h3><%= reservation.name %></h3><p><%= reservation.phone %> · <%= reservation.email %></p></div>
+                <div><h3><%= reservation.name %></h3><p><%= [reservation.phone, reservation.email].filter(Boolean).join(' · ') || 'Aucune coordonnée renseignée' %></p></div>
               </div>
               <form class="admin-checkin-entry__controls" action="/admin/reservations/<%= reservation.id %>/accueil" method="post">
                 <label>Personnes présentes

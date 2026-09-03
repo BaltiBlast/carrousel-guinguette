@@ -27,6 +27,21 @@ class Reservation extends CoreMapper {
     return this.model.countDocuments({ status });
   }
 
+  async synchronizeEmailIndex() {
+    const indexName = "eventId_1_email_1";
+    const indexes = await this.model.collection.indexes();
+    const emailIndex = indexes.find(({ name }) => name === indexName);
+    const hasExpectedFilter = emailIndex?.unique && emailIndex.partialFilterExpression?.email?.$type === "string";
+
+    if (emailIndex && !hasExpectedFilter) await this.model.collection.dropIndex(indexName);
+    if (!hasExpectedFilter) {
+      await this.model.collection.createIndex(
+        { eventId: 1, email: 1 },
+        { name: indexName, unique: true, partialFilterExpression: { email: { $type: "string" } } },
+      );
+    }
+  }
+
   updateReservationStatusById(reservationId, currentStatus, status) {
     return this.model.findOneAndUpdate(
       { _id: reservationId, status: currentStatus },

@@ -1,6 +1,37 @@
 const filterGroup = document.querySelector("[data-review-filters]");
 
 const reservationFilterGroup = document.querySelector("[data-reservation-filters]");
+const reservationDialog = document.querySelector("[data-reservation-dialog]");
+
+if (reservationDialog) {
+  const eventSelect = reservationDialog.querySelector("[data-reservation-event-select]");
+  const seatsInput = reservationDialog.querySelector("[data-reservation-seats]");
+  const seatsHelp = reservationDialog.querySelector("[data-reservation-seats-help]");
+
+  function updateReservationSeatLimit() {
+    const remainingSeats = Number(eventSelect.selectedOptions[0]?.dataset.remainingSeats);
+    if (!Number.isInteger(remainingSeats)) {
+      seatsInput.max = "10000";
+      seatsHelp.textContent = "Sélectionnez d’abord un événement.";
+      return;
+    }
+    seatsInput.max = String(Math.max(1, remainingSeats));
+    seatsHelp.textContent = remainingSeats
+      ? `${remainingSeats} place${remainingSeats > 1 ? "s" : ""} disponible${remainingSeats > 1 ? "s" : ""}.`
+      : "Cet événement est complet.";
+  }
+
+  document.querySelector("[data-open-reservation-dialog]")?.addEventListener("click", () => reservationDialog.showModal());
+  reservationDialog.querySelectorAll("[data-close-reservation-dialog]").forEach((button) => {
+    button.addEventListener("click", () => reservationDialog.close());
+  });
+  reservationDialog.addEventListener("click", (event) => {
+    if (event.target === reservationDialog) reservationDialog.close();
+  });
+  eventSelect.addEventListener("change", updateReservationSeatLimit);
+  updateReservationSeatLimit();
+  if (reservationDialog.hasAttribute("data-open")) reservationDialog.showModal();
+}
 
 if (reservationFilterGroup) {
   const buttons = [...reservationFilterGroup.querySelectorAll("[data-reservation-filter]")];

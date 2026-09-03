@@ -32,6 +32,7 @@ validateConfiguration();
 validateGuestbookConfiguration();
 validateNotificationConfiguration();
 await connectDatabase();
+await ReservationMapper.synchronizeEmailIndex();
 await ReservationMapper.synchronizeEventReservedSeats(EventMapper.model);
 await initializeAdministrator();
 

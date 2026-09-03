@@ -8,7 +8,10 @@
         <h1>Réservations</h1>
         <p>Traitez les nouvelles demandes, puis retrouvez les réservations déjà traitées.</p>
       </div>
+      <button class="button" type="button" data-open-reservation-dialog>Ajouter une réservation</button>
     </div>
+
+    <% if (message) { %><p class="admin-action-message" role="status"><%= message %></p><% } %>
 
     <section class="admin-reservation-priority" aria-labelledby="reservation-priority-title">
       <div>
@@ -57,13 +60,13 @@
             <% event.reservations.forEach((reservation) => { %>
               <article class="admin-reservation" data-reservation-status="<%= reservation.status %>">
                 <header class="admin-reservation__header">
-                  <div><h3><%= reservation.name %></h3><p>Demande reçue le <%= reservation.requestedAt %></p></div>
+                  <div><h3><%= reservation.name %></h3><p><%= reservation.source === 'admin' ? 'Ajoutée manuellement' : 'Demande reçue' %> le <%= reservation.requestedAt %></p></div>
                   <% if (reservation.status !== 'pending') { %><span class="admin-reservation__badge admin-reservation__badge--<%= reservation.status %>"><%= reservation.statusLabel %></span><% } %>
                 </header>
                 <dl class="admin-reservation__details">
                   <div class="admin-reservation__seats"><dt>Personnes</dt><dd><strong><%= reservation.seats %></strong></dd></div>
-                  <div><dt>E-mail</dt><dd><a href="mailto:<%= reservation.email %>"><%= reservation.email %></a></dd></div>
-                  <div><dt>Téléphone</dt><dd><a href="tel:<%= reservation.phone.replace(/\s/g, '') %>"><%= reservation.phone %></a></dd></div>
+                  <div><dt>E-mail</dt><dd><% if (reservation.email) { %><a href="mailto:<%= reservation.email %>"><%= reservation.email %></a><% } else { %>Non renseigné<% } %></dd></div>
+                  <div><dt>Téléphone</dt><dd><% if (reservation.phone) { %><a href="tel:<%= reservation.phone.replace(/\s/g, '') %>"><%= reservation.phone %></a><% } else { %>Non renseigné<% } %></dd></div>
                 </dl>
                 <% if (reservation.rejectionReason) { %><div class="admin-reservation__reason"><strong>Motif du refus</strong><p><%= reservation.rejectionReason %></p></div><% } %>
                 <div class="admin-reservation__actions">
@@ -71,7 +74,7 @@
                     <form action="/admin/reservations/<%= reservation.id %>/statut" method="post"><input type="hidden" name="status" value="accepted" /><button class="button" type="submit">Accepter la réservation</button></form>
                     <form action="/admin/reservations/<%= reservation.id %>/statut" method="post" data-confirm="Refuser la réservation de <%= reservation.name %> ?"><input type="hidden" name="status" value="rejected" /><button class="admin-reservation__text-action" type="submit">Refuser</button></form>
                   <% } else if (reservation.status === 'accepted') { %>
-                    <form action="/admin/reservations/<%= reservation.id %>/statut" method="post" data-confirm="Confirmer l’annulation de la réservation de <%= reservation.name %> ? Un e-mail lui sera envoyé."><input type="hidden" name="status" value="cancelled" /><button class="admin-reservation__text-action" type="submit">Annuler la réservation</button></form>
+                    <form action="/admin/reservations/<%= reservation.id %>/statut" method="post" data-confirm="Confirmer l’annulation de la réservation de <%= reservation.name %> ?<%= reservation.email ? ' Un e-mail lui sera envoyé.' : '' %>"><input type="hidden" name="status" value="cancelled" /><button class="admin-reservation__text-action" type="submit">Annuler la réservation</button></form>
                   <% } else if (reservation.status === 'rejected' && reservation.projectedOverflow) { %>
                     <form action="/admin/reservations/<%= reservation.id %>/statut" method="post" data-confirm="Il n’y a plus assez de places. Cette modification créera un surplus de <%= reservation.projectedOverflow %> personne<%= reservation.projectedOverflow > 1 ? 's' : '' %>. Voulez-vous accepter ce surplus ?">
                       <input type="hidden" name="status" value="pending" />
@@ -90,6 +93,58 @@
       <% }) %>
       <p class="admin-reservation-filter-empty" data-reservation-filter-empty hidden>Aucune réservation dans cette rubrique.</p>
     </div>
+
+    <dialog class="admin-reservation-dialog" data-reservation-dialog <%= reservationError ? 'data-open' : '' %>>
+      <form class="admin-reservation-dialog__form" action="/admin/reservations" method="post">
+        <div class="admin-reservation-dialog__header">
+          <div>
+            <p class="admin-content__eyebrow">Réservation téléphonique</p>
+            <h2>Ajouter une réservation</h2>
+          </div>
+          <button class="admin-reservation-dialog__close" type="button" data-close-reservation-dialog aria-label="Fermer">×</button>
+        </div>
+
+        <p>Cette réservation sera immédiatement considérée comme confirmée.</p>
+        <% if (reservationError) { %><p class="admin-form__error" role="alert"><%= reservationError %></p><% } %>
+        <% if (!reservationEventOptions.length) { %><p class="admin-form__error" role="status">Aucun événement à venir n’est disponible. Créez ou modifiez d’abord un événement.</p><% } %>
+
+        <div class="admin-reservation-dialog__fields">
+          <div class="admin-field admin-reservation-dialog__wide">
+            <label for="manual-reservation-event">Événement *</label>
+            <select id="manual-reservation-event" name="eventId" required data-reservation-event-select>
+              <option value="">Sélectionner un événement</option>
+              <% reservationEventOptions.forEach((event) => { %>
+                <option value="<%= event.id %>" data-remaining-seats="<%= event.remainingSeats %>" <%= reservationForm.eventId === event.id ? 'selected' : '' %>><%= event.title %> · <%= event.formattedStart %> · <%= event.remainingSeats %> place<%= event.remainingSeats > 1 ? 's' : '' %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="admin-field admin-reservation-dialog__wide">
+            <label for="manual-reservation-name">Nom et prénom *</label>
+            <input id="manual-reservation-name" name="name" type="text" minlength="2" maxlength="100" autocomplete="name" value="<%= reservationForm.name || '' %>" required />
+          </div>
+          <div class="admin-field">
+            <label for="manual-reservation-seats">Nombre de personnes *</label>
+            <input id="manual-reservation-seats" name="seats" type="number" min="1" max="10000" value="<%= reservationForm.seats || 1 %>" required data-reservation-seats />
+            <small data-reservation-seats-help>Sélectionnez d’abord un événement.</small>
+          </div>
+          <div class="admin-field">
+            <label for="manual-reservation-phone">Téléphone</label>
+            <input id="manual-reservation-phone" name="phone" type="tel" maxlength="30" autocomplete="tel" value="<%= reservationForm.phone || '' %>" />
+            <small>Facultatif.</small>
+          </div>
+          <div class="admin-field admin-reservation-dialog__wide">
+            <label for="manual-reservation-email">Adresse e-mail</label>
+            <input id="manual-reservation-email" name="email" type="email" maxlength="254" autocomplete="email" value="<%= reservationForm.email || '' %>" />
+            <small>Aucun e-mail ne sera envoyé automatiquement.</small>
+          </div>
+        </div>
+
+        <div class="admin-reservation-dialog__actions">
+          <button class="button button--outline" type="button" data-close-reservation-dialog>Annuler</button>
+          <button class="button" type="submit" <%= reservationEventOptions.length ? '' : 'disabled' %>>Ajouter et confirmer</button>
+        </div>
+      </form>
+    </dialog>
 
   </main>
 </div>

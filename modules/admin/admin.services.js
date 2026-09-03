@@ -448,9 +448,10 @@ export async function getEventsAdminPageData(user, actionMessage = null) {
   };
 }
 
-export async function getReservationsAdminPageData(user) {
+export async function getReservationsAdminPageData(user, options = {}) {
   const storedReservations = await ReservationMapper.findAllReservations();
-  const events = (await EventMapper.findAllEvents())
+  const storedEvents = await EventMapper.findAllEvents();
+  const events = storedEvents
     .filter((event) => storedReservations.some(({ eventId }) => eventId.toString() === event._id.toString()))
     .map((event) => {
       const presentedEvent = presentAdminEvent(event);
@@ -490,6 +491,15 @@ export async function getReservationsAdminPageData(user) {
     reservationPendingCount: await ReservationMapper.countReservationsByStatus("pending"),
     title: "Réservations | Administration du Carrousel",
     description: "Consultez et traitez les demandes de réservation par événement.",
+    message: options.message || null,
+    reservationForm: options.reservationForm || {},
+    reservationError: options.reservationError || null,
+    reservationEventOptions: storedEvents
+      .filter(({ endsAt }) => new Date(endsAt) >= new Date())
+      .map((event) => ({
+        ...presentAdminEvent(event),
+        remainingSeats: Math.max(0, (event.capacity ?? 100) - (event.reservedSeats ?? 0)),
+      })),
     events,
     counts: {
       total: reservations.length,
@@ -499,6 +509,61 @@ export async function getReservationsAdminPageData(user) {
       cancelled: countByStatus("cancelled"),
     },
   };
+}
+
+export class ReservationValidationError extends Error {
+  constructor(message, statusCode = 422) {
+    super(message);
+    this.name = "ReservationValidationError";
+    this.statusCode = statusCode;
+  }
+}
+
+export async function createManualReservation(input) {
+  const eventId = typeof input.eventId === "string" ? input.eventId.trim() : "";
+  const name = typeof input.name === "string" ? input.name.trim() : "";
+  const email = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
+  const phone = typeof input.phone === "string" ? input.phone.trim() : "";
+  const seats = Number(input.seats);
+
+  if (!/^[a-f\d]{24}$/i.test(eventId)) throw new ReservationValidationError("Sélectionnez un événement.");
+  if (name.length < 2 || name.length > 100) throw new ReservationValidationError("Le nom doit contenir entre 2 et 100 caractères.");
+  if (!Number.isInteger(seats) || seats < 1 || seats > 10000) throw new ReservationValidationError("Le nombre de personnes doit être compris entre 1 et 10 000.");
+  if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) throw new ReservationValidationError("L’adresse e-mail saisie n’est pas valide.");
+  if (phone && (phone.length < 6 || phone.length > 30 || !/^[+\d\s().-]+$/.test(phone))) throw new ReservationValidationError("Le numéro de téléphone saisi n’est pas valide.");
+
+  const event = await EventMapper.findEventById(eventId);
+  if (!event) throw new ReservationValidationError("L’événement sélectionné est introuvable.", 404);
+  if (new Date(event.endsAt) < new Date()) throw new ReservationValidationError("Cet événement est terminé.", 409);
+  if (email && await ReservationMapper.findReservationByEventAndEmail(eventId, email)) {
+    throw new ReservationValidationError("Une réservation existe déjà pour cet événement avec cette adresse e-mail.", 409);
+  }
+
+  const reservedEvent = await EventMapper.reserveSeats(eventId, seats);
+  if (!reservedEvent) {
+    const remainingSeats = Math.max(0, (event.capacity ?? 100) - (event.reservedSeats ?? 0));
+    throw new ReservationValidationError(
+      remainingSeats ? `Il ne reste que ${remainingSeats} place${remainingSeats > 1 ? "s" : ""}.` : "Cet événement est complet.",
+      409,
+    );
+  }
+
+  try {
+    const reservation = await ReservationMapper.createReservation({
+      eventId,
+      name,
+      email: email || null,
+      phone: phone || null,
+      seats,
+      status: "accepted",
+      source: "admin",
+    });
+    return { ...reservation.toObject(), eventSlug: event.slug };
+  } catch (error) {
+    await EventMapper.releaseSeats(eventId, seats);
+    if (error?.code === 11000) throw new ReservationValidationError("Une réservation existe déjà pour cet événement avec cette adresse e-mail.", 409);
+    throw error;
+  }
 }
 
 export async function getCheckInAdminPageData(user, eventId) {
@@ -564,7 +629,7 @@ export async function updateReservationStatus(reservationId, status, allowOverfl
     if (updated && wasReserved && !willBeReserved) await EventMapper.releaseSeats(reservation.eventId, reservation.seats);
   }
 
-  if (updated && status === "accepted") {
+  if (updated?.email && status === "accepted") {
     try {
       const event = await EventMapper.findEventById(updated.eventId);
       if (!event) throw new Error("Événement associé à la réservation introuvable.");
@@ -574,7 +639,7 @@ export async function updateReservationStatus(reservationId, status, allowOverfl
     }
   }
 
-  if (updated && reservation.status === "accepted" && status === "cancelled") {
+  if (updated?.email && reservation.status === "accepted" && status === "cancelled") {
     try {
       const event = await EventMapper.findEventById(updated.eventId);
       if (!event) throw new Error("Événement associé à la réservation introuvable.");

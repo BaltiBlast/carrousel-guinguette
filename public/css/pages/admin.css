@@ -727,6 +727,16 @@
 .admin-reservation__text-action:hover { color: var(--color-accent); }
 .admin-reservation-filter-empty { padding: var(--space-8); border: var(--border-width) dashed var(--color-border); border-radius: var(--radius-md); color: var(--color-text-muted); background: var(--color-surface); text-align: center; }
 .admin-field select { width: 100%; min-height: 3.25rem; padding: var(--space-3) var(--space-4); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-sm); color: var(--color-text); background: var(--color-white); }
+.admin-reservation-dialog { width: min(42rem, calc(100% - 2rem)); max-height: calc(100vh - 2rem); padding: 0; border: 0; border-radius: var(--radius-lg); color: var(--color-text); background: var(--color-surface); box-shadow: var(--shadow-lg); }
+.admin-reservation-dialog::backdrop { background: rgb(21 30 24 / 65%); backdrop-filter: blur(0.15rem); }
+.admin-reservation-dialog__form { padding: var(--space-8); }
+.admin-reservation-dialog__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-5); }
+.admin-reservation-dialog__header + p { margin-top: var(--space-3); color: var(--color-text-muted); }
+.admin-reservation-dialog__close { width: 2.5rem; height: 2.5rem; flex: 0 0 2.5rem; padding: 0; border: 0; border-radius: 50%; color: var(--color-text-muted); background: var(--color-background); font: inherit; font-size: var(--font-size-xl); cursor: pointer; }
+.admin-reservation-dialog__fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); margin-top: var(--space-6); }
+.admin-reservation-dialog__fields .admin-field { align-content: start; }
+.admin-reservation-dialog__wide { grid-column: 1 / -1; }
+.admin-reservation-dialog__actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-8); }
 
 /* Daily reservation check-in */
 .admin-checkin-empty { padding: var(--space-8); margin-top: var(--space-8); border: var(--border-width) dashed var(--color-border); border-radius: var(--radius-md); color: var(--color-text-muted); background: var(--color-surface); text-align: center; }
@@ -862,6 +872,11 @@
   .admin-reservation__actions form,
   .admin-reservation__actions .button { width: 100%; }
   .admin-reservation__text-action { width: 100%; text-align: center; }
+  .admin-reservation-dialog__form { padding: var(--space-5); }
+  .admin-reservation-dialog__fields { grid-template-columns: 1fr; }
+  .admin-reservation-dialog__wide { grid-column: auto; }
+  .admin-reservation-dialog__actions { align-items: stretch; flex-direction: column-reverse; }
+  .admin-reservation-dialog__actions .button { width: 100%; }
   .admin-checkin__stats { grid-template-columns: 1fr; }
   .admin-checkin__event,
   .admin-checkin-entry { padding: var(--space-4); }

@@ -111,8 +111,25 @@ export async function showEvents(req, res, next) {
 
 export async function showReservations(req, res, next) {
   try {
-    return res.render("admin/reservations", await service.getReservationsAdminPageData(req.adminUser));
+    const message = req.query.action === "created" ? "La réservation a été ajoutée et confirmée." : null;
+    return res.render("admin/reservations", await service.getReservationsAdminPageData(req.adminUser, { message }));
   } catch (error) { return next(error); }
+}
+
+export async function createReservation(req, res, next) {
+  try {
+    const reservation = await service.createManualReservation(req.body);
+    return res.redirect(303, `/admin/reservations?action=created#reservations-${reservation.eventSlug}`);
+  } catch (error) {
+    if (error instanceof service.ReservationValidationError) {
+      const pageData = await service.getReservationsAdminPageData(req.adminUser, {
+        reservationForm: req.body,
+        reservationError: error.message,
+      });
+      return res.status(error.statusCode).render("admin/reservations", pageData);
+    }
+    return next(error);
+  }
 }
 
 export async function showPreferences(req, res, next) {
