@@ -1,18 +1,12 @@
 import webpush from "web-push";
 
-import { NotificationDeliveryMapper, PushSubscriptionMapper, UserMapper } from "../../model/index.mapper.js";
+import { PushSubscriptionMapper, UserMapper } from "../../model/index.mapper.js";
 import { sendTransactionalEmail, validateEmailConfiguration } from "./email.transport.js";
 import { buildNotificationPlan, NOTIFICATION_TYPES } from "./notifications.registry.js";
 
 export { NOTIFICATION_TYPES };
 
 let isWebPushConfigured = false;
-let notificationWorker;
-
-const DELIVERY_LEASE_MS = 2 * 60 * 1000;
-const WORKER_INTERVAL_MS = 30 * 1000;
-const WORKER_BATCH_SIZE = 20;
-const MAX_RETRY_DELAY_MS = 6 * 60 * 60 * 1000;
 
 export class NotificationSubscriptionError extends Error {
   constructor(message) {
@@ -128,10 +122,6 @@ async function sendEmailNotification(email) {
   });
 }
 
-function getRetryDelayMilliseconds(attempts) {
-  return Math.min(30 * 1000 * (2 ** Math.max(0, attempts - 1)), MAX_RETRY_DELAY_MS);
-}
-
 async function executeDelivery(delivery) {
   if (delivery.channel === "administrator-push") {
     return sendPushNotificationToUser(delivery.recipientUserId, delivery.payload);
@@ -142,65 +132,6 @@ async function executeDelivery(delivery) {
   }
 
   throw new Error(`Canal de notification inconnu : ${delivery.channel}`);
-}
-
-async function processClaimedDelivery(delivery) {
-  try {
-    const result = await executeDelivery(delivery);
-    await NotificationDeliveryMapper.markSent(delivery._id, new Date());
-    return result;
-  } catch (error) {
-    const nextAttemptAt = new Date(Date.now() + getRetryDelayMilliseconds(delivery.attempts));
-    await NotificationDeliveryMapper.markFailed(delivery._id, error?.message || String(error), nextAttemptAt);
-    throw error;
-  }
-}
-
-async function processDeliveryById(deliveryId) {
-  const currentDate = new Date();
-  const delivery = await NotificationDeliveryMapper.claimById(
-    deliveryId,
-    currentDate,
-    new Date(currentDate.getTime() + DELIVERY_LEASE_MS),
-  );
-
-  if (!delivery) return { skipped: true };
-  return processClaimedDelivery(delivery);
-}
-
-export async function processPendingNotifications(limit = WORKER_BATCH_SIZE) {
-  let processed = 0;
-
-  while (processed < limit) {
-    const currentDate = new Date();
-    const delivery = await NotificationDeliveryMapper.claimNextDue(
-      currentDate,
-      new Date(currentDate.getTime() + DELIVERY_LEASE_MS),
-    );
-    if (!delivery) break;
-
-    try {
-      await processClaimedDelivery(delivery);
-    } catch (error) {
-      console.error(`Nouvelle tentative de notification échouée (${delivery.channel}) :`, error?.message || error);
-    }
-    processed += 1;
-  }
-
-  return processed;
-}
-
-export function startNotificationWorker() {
-  if (notificationWorker) return notificationWorker;
-
-  const run = () => processPendingNotifications().catch((error) => {
-    console.error("Échec du traitement de la file de notifications :", error?.message || error);
-  });
-
-  void run();
-  notificationWorker = setInterval(run, WORKER_INTERVAL_MS);
-  notificationWorker.unref?.();
-  return notificationWorker;
 }
 
 export function validateNotificationConfiguration() {
@@ -244,7 +175,6 @@ export async function dispatchNotification(type, data) {
         channel: "administrator-push",
         recipientUserId: administrator._id,
         payload: plan.administratorPush,
-        idempotencyKey: `administrator-push/${type}/${plan.administratorPush.tag}/${administrator._id}`,
       })),
     );
   }
@@ -253,17 +183,12 @@ export async function dispatchNotification(type, data) {
     ...(plan.visitorEmails || []).map((email) => ({
       channel: "visitor-email",
       payload: email,
-      idempotencyKey: email.idempotencyKey,
     })),
   );
 
-  const queuedDeliveries = await Promise.all(deliveries.map((delivery) => NotificationDeliveryMapper.enqueue({
-    type,
-    ...delivery,
-  })));
-  const results = await Promise.allSettled(queuedDeliveries.map((delivery) => processDeliveryById(delivery._id)));
+  const results = await Promise.allSettled(deliveries.map(executeDelivery));
   const report = results.map((result, index) => ({
-    channel: queuedDeliveries[index].channel,
+    channel: deliveries[index].channel,
     status: result.status,
     value: result.status === "fulfilled" ? result.value : undefined,
     reason: result.status === "rejected" ? result.reason : undefined,
@@ -277,7 +202,7 @@ export async function dispatchNotification(type, data) {
 
   const failures = report.filter(({ status }) => status === "rejected");
   if (failures.length) {
-    throw new AggregateError(failures.map(({ reason }) => reason), `${failures.length} notification(s) placée(s) en attente de nouvelle tentative.`);
+    throw new AggregateError(failures.map(({ reason }) => reason), `${failures.length} notification(s) n’ont pas pu être envoyée(s).`);
   }
 
   return report;

@@ -5,7 +5,7 @@ import { connectDatabase } from "./database.js";
 import { EventMapper, ReservationMapper } from "./model/index.mapper.js";
 import { initializeAdministrator, validateConfiguration } from "./modules/admin/admin.services.js";
 import { validateGuestbookConfiguration } from "./modules/livre-d-or/livre-d-or.services.js";
-import { startNotificationWorker, validateNotificationConfiguration } from "./modules/notifications/notifications.services.js";
+import { validateNotificationConfiguration } from "./modules/notifications/notifications.services.js";
 import router from "./router.js";
 
 const app = express();
@@ -34,7 +34,6 @@ validateNotificationConfiguration();
 await connectDatabase();
 await ReservationMapper.synchronizeEventReservedSeats(EventMapper.model);
 await initializeAdministrator();
-startNotificationWorker();
 
 app.listen(port, () => {
   console.log(`Serveur accessible sur http://localhost:${port}`);
