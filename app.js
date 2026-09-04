@@ -23,7 +23,12 @@ app.use(expressLayouts);
 app.use(router);
 
 app.use((request, response) => {
-  response.status(404).send("Page introuvable");
+  response.status(404).render("errors/404", {
+    title: "Page introuvable | Le Carrousel",
+    description: "Cette page n’existe pas ou n’est plus disponible.",
+    currentYear: new Date().getFullYear(),
+    robots: "noindex, follow",
+  });
 });
 
 const port = process.env.PORT || 3000;

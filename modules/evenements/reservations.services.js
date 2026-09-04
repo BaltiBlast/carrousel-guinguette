@@ -28,7 +28,7 @@ function validateInput(reservation) {
   if (reservation.name.length < 2 || reservation.name.length > 100) throw new ReservationSubmissionError("Le nom doit contenir entre 2 et 100 caractères.");
   if (reservation.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reservation.email)) throw new ReservationSubmissionError("L’adresse e-mail saisie n’est pas valide.");
   if (reservation.phone.length < 6 || reservation.phone.length > 30 || !/^[+\d\s().-]+$/.test(reservation.phone)) throw new ReservationSubmissionError("Le numéro de téléphone saisi n’est pas valide.");
-  if (!Number.isInteger(reservation.seats) || reservation.seats < 1 || reservation.seats > 10) throw new ReservationSubmissionError("Vous pouvez réserver entre 1 et 10 places.");
+  if (!Number.isInteger(reservation.seats) || reservation.seats < 1 || reservation.seats > 20) throw new ReservationSubmissionError("Vous pouvez réserver entre 1 et 20 places.");
   if (!reservation.privacyAccepted) throw new ReservationSubmissionError("Vous devez accepter l’utilisation de vos données pour traiter la réservation.");
 }
 
