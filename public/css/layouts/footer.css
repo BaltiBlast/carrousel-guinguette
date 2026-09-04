@@ -76,12 +76,29 @@
 }
 
 .site-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1) var(--space-2);
   margin-top: var(--space-8);
   padding-top: var(--space-4);
   border-top: var(--border-width) solid rgb(255 255 255 / 22%);
   color: rgb(255 255 255 / 76%);
   font-size: var(--font-size-xs);
   text-align: center;
+}
+
+.site-footer__bottom a {
+  color: var(--color-white);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  text-decoration-color: rgb(255 255 255 / 40%);
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color var(--transition-fast);
+}
+
+.site-footer__bottom a:hover {
+  text-decoration-color: currentColor;
 }
 
 @media (max-width: 56rem) {
