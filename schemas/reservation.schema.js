@@ -8,6 +8,7 @@ const reservationSchema = new mongoose.Schema(
     phone: { type: String, trim: true, maxlength: 30, default: null },
     seats: { type: Number, required: true, min: 1, max: 10000 },
     source: { type: String, enum: ["online", "admin"], default: "online", index: true },
+    createdByUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
     status: { type: String, enum: ["pending", "accepted", "rejected", "cancelled"], default: "pending", index: true },
     checkedIn: { type: Boolean, default: false },
     attendeeCount: { type: Number, min: 0, default: 0 },

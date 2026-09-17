@@ -68,3 +68,16 @@ test("une nouvelle transition produit une nouvelle clé d’envoi", () => {
 
   assert.notEqual(firstEmail.idempotencyKey, secondEmail.idempotencyKey);
 });
+
+test("une réservation ajoutée par un non-admin produit uniquement une notification administrateur", () => {
+  const plan = buildNotificationPlan(NOTIFICATION_TYPES.RESERVATION_CREATED_BY_NON_ADMIN, {
+    ...notificationData,
+    event: { ...notificationData.event, slug: "soiree-jazz" },
+    actor: { displayName: "Christelle et Marjorie" },
+  });
+
+  assert.equal(plan.administratorPush.title, "Réservation ajoutée par Christelle et Marjorie");
+  assert.match(plan.administratorPush.body, /Camille & Co · 3 places pour « Soirée <Jazz> »/);
+  assert.equal(plan.administratorPush.url, "/admin/reservations#reservations-soiree-jazz");
+  assert.equal(plan.visitorEmails, undefined);
+});

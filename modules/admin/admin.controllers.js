@@ -135,7 +135,7 @@ export async function showReservations(req, res, next) {
 
 export async function createReservation(req, res, next) {
   try {
-    const reservation = await service.createManualReservation(req.body);
+    const reservation = await service.createManualReservation(req.body, req.adminUser);
     return res.redirect(303, `/admin/reservations?action=created#reservations-${reservation.eventSlug}`);
   } catch (error) {
     if (error instanceof service.ReservationValidationError) {

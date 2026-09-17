@@ -522,7 +522,7 @@ export class ReservationValidationError extends Error {
   }
 }
 
-export async function createManualReservation(input) {
+export async function createManualReservation(input, actor) {
   const eventId = typeof input.eventId === "string" ? input.eventId.trim() : "";
   const name = typeof input.name === "string" ? input.name.trim() : "";
   const email = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
@@ -560,7 +560,21 @@ export async function createManualReservation(input) {
       seats,
       status: "accepted",
       source: "admin",
+      createdByUserId: actor._id,
     });
+
+    if (actor.role !== "admin") {
+      try {
+        await dispatchNotification(NOTIFICATION_TYPES.RESERVATION_CREATED_BY_NON_ADMIN, {
+          reservation,
+          event,
+          actor,
+        });
+      } catch (error) {
+        console.error("Échec de la notification de la réservation ajoutée par un non-admin :", error.message);
+      }
+    }
+
     return { ...reservation.toObject(), eventSlug: event.slug };
   } catch (error) {
     await EventMapper.releaseSeats(eventId, seats);
