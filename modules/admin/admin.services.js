@@ -3,6 +3,7 @@ import { EventMapper, MagicLinkTokenMapper, ReservationMapper, ReviewMapper, Ses
 import { eventDescriptionToText, plainEventDescriptionToHtml, sanitizeEventDescription } from "../evenements/event-description.js";
 import { sendTransactionalEmail, validateEmailConfiguration } from "../notifications/email.transport.js";
 import { dispatchNotification, NOTIFICATION_TYPES } from "../notifications/notifications.services.js";
+import { getAdminViewContext } from "./admin.permissions.js";
 const reservationStatusLabels = { pending: "En attente", accepted: "Acceptée", rejected: "Refusée", cancelled: "Annulée" };
 const reservationStatusTransitions = Object.freeze({
   pending: new Set(["accepted", "rejected"]),
@@ -18,6 +19,10 @@ export function isReservationStatusTransitionAllowed(currentStatus, nextStatus) 
 const LOGIN_REQUEST_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_REQUEST_LIMIT = 5;
 const loginRequests = new Map();
+
+function canAccessAdministration(user) {
+  return Boolean(user?.isActive);
+}
 
 function getRequiredEnvironmentVariable(name) {
   const value = process.env[name]?.trim();
@@ -106,8 +111,6 @@ export async function initializeAdministrator() {
   const administrator = getAdministratorData();
   const user = await UserMapper.upsertUserByEmail(administrator.email, administrator);
 
-  await UserMapper.deleteUsersExcept(user._id);
-
   return user;
 }
 
@@ -141,15 +144,13 @@ export async function requestMagicLink(email, requestIdentifier) {
     return;
   }
 
-  const administratorEmail = normalizeEmail(getRequiredEnvironmentVariable("ADMIN_EMAIL"));
-
-  if (!normalizedEmail || normalizedEmail !== administratorEmail) {
+  if (!normalizedEmail) {
     return;
   }
 
   const user = await UserMapper.findUserByEmail(normalizedEmail);
 
-  if (!user || !user.isActive || user.role !== "admin") {
+  if (!canAccessAdministration(user)) {
     return;
   }
 
@@ -200,7 +201,7 @@ export async function createSessionFromMagicLink(token, userAgent = "") {
 
   const user = await UserMapper.findUserById(consumedToken.userId);
 
-  if (!user || !user.isActive || user.role !== "admin") {
+  if (!canAccessAdministration(user)) {
     return null;
   }
 
@@ -233,7 +234,7 @@ export async function findAuthenticatedUser(sessionToken) {
 
   const user = await UserMapper.findUserById(session.userId);
 
-  if (!user || !user.isActive || user.role !== "admin") {
+  if (!canAccessAdministration(user)) {
     return null;
   }
 
@@ -328,26 +329,22 @@ export async function getDashboardPageData(user, actionMessage = null) {
   );
 
   return {
-    layout: "layouts/admin",
+    ...getAdminBaseData(user),
     title: "Livre d’or | Administration du Carrousel",
     description: "Gestion des avis du livre d’or du Carrousel.",
-    pageClass: "admin-page",
     reviews,
     counts,
     reservationPendingCount: await ReservationMapper.countReservationsByStatus("pending"),
-    user,
     actionMessage,
   };
 }
 
 export async function getPreferencesPageData(user) {
   return {
-    layout: "layouts/admin",
+    ...getAdminBaseData(user),
     title: "Préférences | Administration du Carrousel",
     description: "Préférences du compte administrateur du Carrousel.",
-    pageClass: "admin-page",
     reservationPendingCount: await ReservationMapper.countReservationsByStatus("pending"),
-    user,
   };
 }
 
@@ -429,7 +426,13 @@ function presentAdminEvent(event) {
 }
 
 function getAdminBaseData(user) {
-  return { layout: "layouts/admin", pageClass: "admin-page", user, reservationPendingCount: null };
+  return {
+    layout: "layouts/admin",
+    pageClass: "admin-page",
+    user,
+    reservationPendingCount: null,
+    ...getAdminViewContext(user),
+  };
 }
 
 export async function getEventsAdminPageData(user, actionMessage = null) {

@@ -1,10 +1,10 @@
 <aside class="admin-sidebar" aria-label="Navigation de l’administration">
   <p class="admin-sidebar__label">Administration</p>
   <nav>
-    <a class="admin-sidebar__link <%= activePage === 'dashboard' ? '' : 'admin-sidebar__link--secondary' %>" href="/admin/tableau-de-bord" <%- activePage === 'dashboard' ? 'aria-current="page"' : '' %>>Livre d’or</a>
-    <a class="admin-sidebar__link <%= activePage === 'events' ? '' : 'admin-sidebar__link--secondary' %>" href="/admin/evenements" <%- activePage === 'events' ? 'aria-current="page"' : '' %>>Événements</a>
-    <a class="admin-sidebar__link <%= activePage === 'reservations' ? '' : 'admin-sidebar__link--secondary' %>" href="/admin/reservations" <%- activePage === 'reservations' ? 'aria-current="page"' : '' %>>Réservations<% if (reservationPendingCount) { %><span class="admin-sidebar__count"><%= reservationPendingCount %></span><% } %></a>
-    <a class="admin-sidebar__link <%= activePage === 'preferences' ? '' : 'admin-sidebar__link--secondary' %>" href="/admin/preferences" <%- activePage === 'preferences' ? 'aria-current="page"' : '' %>>Préférences</a>
+    <% if (adminAccess.reviews) { %><a class="admin-sidebar__link <%= activePage === 'dashboard' ? '' : 'admin-sidebar__link--secondary' %>" href="/admin/tableau-de-bord" <%- activePage === 'dashboard' ? 'aria-current="page"' : '' %>>Livre d’or</a><% } %>
+    <% if (adminAccess.events) { %><a class="admin-sidebar__link <%= activePage === 'events' ? '' : 'admin-sidebar__link--secondary' %>" href="/admin/evenements" <%- activePage === 'events' ? 'aria-current="page"' : '' %>>Événements</a><% } %>
+    <% if (adminAccess.reservations) { %><a class="admin-sidebar__link <%= activePage === 'reservations' ? '' : 'admin-sidebar__link--secondary' %>" href="/admin/reservations" <%- activePage === 'reservations' ? 'aria-current="page"' : '' %>>Réservations<% if (reservationPendingCount) { %><span class="admin-sidebar__count"><%= reservationPendingCount %></span><% } %></a><% } %>
+    <% if (adminAccess.preferences) { %><a class="admin-sidebar__link <%= activePage === 'preferences' ? '' : 'admin-sidebar__link--secondary' %>" href="/admin/preferences" <%- activePage === 'preferences' ? 'aria-current="page"' : '' %>>Préférences</a><% } %>
   </nav>
   <a class="admin-sidebar__site-link" href="/" target="_blank" rel="noopener noreferrer">Voir le site ↗</a>
 </aside>
