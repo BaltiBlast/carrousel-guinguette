@@ -3,6 +3,7 @@ import { ORGANIZER_CONTACT } from "../../config/contact.js";
 export const NOTIFICATION_TYPES = Object.freeze({
   REVIEW_CREATED: "review.created",
   RESERVATION_CREATED: "reservation.created",
+  RESERVATION_CREATED_BY_NON_ADMIN: "reservation.created-by-non-admin",
   RESERVATION_ACCEPTED: "reservation.accepted",
   RESERVATION_CANCELLED: "reservation.cancelled",
 });
@@ -329,6 +330,22 @@ const notificationBuilders = {
         tag: `new-reservation-${reservation._id}`,
       },
       visitorEmails: [buildReservationAcknowledgementEmail(data)],
+    };
+  },
+
+  [NOTIFICATION_TYPES.RESERVATION_CREATED_BY_NON_ADMIN]({ reservation, event, actor }) {
+    const seats = Number(reservation.seats);
+    const seatsLabel = Number.isInteger(seats)
+      ? `${seats} place${seats > 1 ? "s" : ""}`
+      : "une ou plusieurs places";
+
+    return {
+      administratorPush: {
+        title: `Réservation ajoutée par ${actor.displayName}`,
+        body: `${reservation.name} · ${seatsLabel} pour « ${event.title} ».`,
+        url: `/admin/reservations#reservations-${event.slug}`,
+        tag: `manual-reservation-${reservation._id}`,
+      },
     };
   },
 
