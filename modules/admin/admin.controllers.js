@@ -1,9 +1,20 @@
 import * as service from "./admin.services.js";
 import { getSessionToken } from "./admin.middlewares.js";
+import { getDefaultAdminPath } from "./admin.permissions.js";
 
 export function showLogin(req, res) {
   res.set("Cache-Control", "no-store");
   res.render("admin/connexion", service.getLoginPageData());
+}
+
+export function showAdminHome(req, res, next) {
+  const destination = getDefaultAdminPath(req.adminUser);
+
+  if (!destination) {
+    return next("route");
+  }
+
+  return res.redirect(destination);
 }
 
 export async function sendMagicLink(req, res, next) {
@@ -59,7 +70,13 @@ export async function confirmMagicLink(req, res, next) {
       authentication.sessionToken,
       service.getSessionCookieOptions(authentication.expiresAt),
     );
-    return res.redirect("/admin/tableau-de-bord");
+    const destination = getDefaultAdminPath(authentication.user);
+
+    if (!destination) {
+      return next("route");
+    }
+
+    return res.redirect(destination);
   } catch (error) {
     return next(error);
   }

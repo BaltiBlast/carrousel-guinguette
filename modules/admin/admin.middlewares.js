@@ -1,4 +1,5 @@
 import * as service from "./admin.services.js";
+import { hasAdminPermission } from "./admin.permissions.js";
 
 function readCookie(request, name) {
   const cookies = request.headers.cookie?.split(";") || [];
@@ -37,6 +38,16 @@ export async function requireAuthentication(request, response, next) {
   } catch (error) {
     return next(error);
   }
+}
+
+export function requirePermission(permission) {
+  return function checkPermission(request, response, next) {
+    if (!hasAdminPermission(request.adminUser, permission)) {
+      return next("route");
+    }
+
+    return next();
+  };
 }
 
 export function getSessionToken(request) {

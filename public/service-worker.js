@@ -21,14 +21,14 @@ self.addEventListener("push", (event) => {
       icon: payload.icon || "/assets/icons/icon-192.png",
       badge: payload.badge || "/assets/icons/favicon-32.png",
       tag: payload.tag,
-      data: { url: payload.url || "/admin/tableau-de-bord" },
+      data: { url: payload.url || "/admin" },
     }),
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl = new URL(event.notification.data?.url || "/admin/tableau-de-bord", self.location.origin).href;
+  const targetUrl = new URL(event.notification.data?.url || "/admin", self.location.origin).href;
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (windowClients) => {

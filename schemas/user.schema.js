@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin"],
+      enum: ["admin", "reservation_manager"],
       default: "admin",
       required: true,
     },
